@@ -19,7 +19,7 @@ eval_mix:
 training:
   learning_rate: 1.0e-6
   beta: 0.0
-  total_episodes: 1048576 # num prompts total
+  total_episodes: 1048576 # total completions (# train steps * # unique prompts * # rollouts per prompt)
   temperature: 1.0
   response_length: 32768
   max_prompt_token_length: 512
