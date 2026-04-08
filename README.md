@@ -1,6 +1,6 @@
 data mixing for RL
 
-## setup
+### setup
 
 ```bash
 git clone https://github.com/davidheineman/rl-mixing
@@ -15,7 +15,7 @@ cd ..
 uv sync
 ```
 
-## usage
+### usage
 
 ```bash
 # experiments are defined through configs
@@ -25,7 +25,7 @@ python src/launch.py configs/examples/gsm_math_8b.yaml --dry-run
 python src/launch.py --sweep src/sweeps/example_gsm_if.py --dry-run
 ```
 
-### python API
+#### python api
 
 ```python
 from experiments import Experiment, Mix, MixComponent, EvalMix, EvalMixComponent
@@ -46,9 +46,9 @@ for gsm_frac in [0.25, 0.5, 0.75]:
     exp.launch(dry_run=True)
 ```
 
-## ingest data
+### ingest data
 
-Ingest https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends -> https://huggingface.co/datasets/davidheineman/nemotron-rlvr-openinstruct
+Ingest [nvidia/Nemotron-RL-Super-Training-Blends](https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends) -> [davidheineman/nemotron-rlvr-openinstruct](https://huggingface.co/datasets/davidheineman/nemotron-rlvr-openinstruct)
 
 ```sh
 python -c "
