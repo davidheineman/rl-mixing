@@ -2,18 +2,21 @@
   # https://github.com/allenai/open-instruct/blob/main/scripts/train/qwen/qwen3_4b_dapo_math_32k.sh
   # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
-name: gsm-math-qwen3.5-2b-100k
+name: dapo-14k-math-qwen3.5-2b
 # model: Qwen/Qwen3.5-2B-Base
 model: Qwen/Qwen3-4B-Base
 chat_template: qwen_instruct_user_boxed_math
 
 mix:
-  - dataset: ai2-adapt-dev/rlvr_gsm8k_zs
+  - dataset: mnoukhov/dapo_math_14k_en_openinstruct
     proportion: 1.0
     split: train
 
 eval_mix:
-  - dataset: ai2-adapt-dev/rlvr_gsm8k_zs
+  - dataset: mnoukhov/aime_2025_openinstruct
+    num_samples: 16
+    split: train
+  - dataset: mnoukhov/brumo_2025_openinstruct
     num_samples: 16
     split: train
 
@@ -22,12 +25,17 @@ training:
   beta: 0.0
   total_episodes: 131072 # total completions (# train steps * # unique prompts * # rollouts per prompt)
   temperature: 1.0
-  response_length: 32256
+  ## 32K rollouts
+  # response_length: 32256
+  # max_prompt_token_length: 512
+  # pack_length: 32768
+  ## 4K rollouts
+  response_length: 3968
   max_prompt_token_length: 512
   pack_length: 32768
   num_samples_per_prompt_rollout: 16
-  num_unique_prompts_rollout: 32 # num distinct prompts per train step
-  async_steps: 4
+  num_unique_prompts_rollout: 8 # num distinct prompts per train step
+  async_steps: 1
   per_device_train_batch_size: 1
   kl_estimator: 2
   lr_scheduler_type: constant
@@ -77,6 +85,8 @@ extra_args:
   - --checkpoint_state_freq
   - "100"
   - --checkpoint_state_dir
-  - /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/gsm-math-qwen3.5-2b-100k
+  - /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/dapo-14k-math-qwen3.5-2b
+  - --remap_verifier
+  - math_dapo=math
   - --wandb_project
   - rl-mixing

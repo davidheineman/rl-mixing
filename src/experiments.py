@@ -46,7 +46,12 @@ class Mix:
         return result
 
     def splits(self) -> list[str]:
-        return [c.split for c in self.components]
+        # open-instruct auto-expands a single split to all datasets;
+        # passing N splits for N datasets (but 2N mixer_list elements) errors.
+        splits = [c.split for c in self.components]
+        if len(set(splits)) == 1:
+            return splits[:1]
+        return splits
 
     def summary(self) -> str:
         parts = [f"{c.dataset.split('/')[-1]}={c.proportion}" for c in self.components]
@@ -65,7 +70,10 @@ class EvalMix:
         return result
 
     def splits(self) -> list[str]:
-        return [c.split for c in self.components]
+        splits = [c.split for c in self.components]
+        if len(set(splits)) == 1:
+            return splits[:1]
+        return splits
 
 
 @dataclass
