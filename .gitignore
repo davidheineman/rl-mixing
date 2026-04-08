@@ -1,0 +1,4 @@
+open-instruct/
+.venv/
+ingest/raw/
+*.pyc

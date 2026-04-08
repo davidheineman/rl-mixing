@@ -1,0 +1,46 @@
+[project]
+name = "rl-mixing"
+version = "0.1.0"
+description = "data mixing for RL"
+requires-python = "==3.12.*"
+dependencies = [
+    "open-instruct",
+    "pyyaml>=6.0",
+    "cuvette", # beaker management
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["experiments", "launch"]
+
+# ---- uv configuration (same as open-instruct) ----s
+
+[tool.uv]
+preview = true
+python-preference = "only-managed"
+
+[tool.uv.sources]
+open-instruct = { path = "open-instruct", editable = true }
+
+torch = [
+  { index = "pytorch-cu128", marker = "platform_system == 'Linux' and platform_machine != 'aarch64'" },
+  { index = "pytorch-cu130", marker = "platform_system == 'Linux' and platform_machine == 'aarch64'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
