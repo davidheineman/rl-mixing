@@ -7,10 +7,21 @@ name: dapo-14k-math-qwen3.5-2b
 model: Qwen/Qwen3-4B-Base
 chat_template: qwen_instruct_user_boxed_math
 
+# mix:
+#   - dataset: mnoukhov/dapo_math_14k_en_openinstruct
+#     proportion: 1.0
+#     split: train
+
 mix:
-  - dataset: mnoukhov/dapo_math_14k_en_openinstruct
+  - dataset: davidheineman/nemotron-rlvr-openinstruct
     proportion: 1.0
-    split: train
+    split: rlvr1
+  - dataset: davidheineman/nemotron-rlvr-openinstruct
+    proportion: 1.0
+    split: rlvr2
+  - dataset: davidheineman/nemotron-rlvr-openinstruct
+    proportion: 1.0
+    split: rlvr3
 
 eval_mix:
   - dataset: mnoukhov/aime_2025_openinstruct

@@ -6,6 +6,7 @@ data mixing for RL.
 
 ```bash
 git clone https://github.com/davidheineman/rl-mixing
+cd rl-mixing
 
 # mixing 💛 open-instruct
 git clone https://github.com/allenai/open-instruct.git
@@ -68,10 +69,11 @@ python ingest/raw/fill_placeholders.py \
     --input-dir ingest/raw \
     --output-dir ingest/filled
 
-python convert_nemotron.py \
+python ingest/convert_nemotron.py \
     --input-dir ingest/filled \
     --output-dir ingest/converted \
     --splits rlvr1 rlvr2 rlvr3 \
     --high-fidelity-only \
-    --push-to-hub davidheineman/nemotron-rlvr-openinstruct
+    --push-to-hub davidheineman/nemotron-rlvr-openinstruct \
+    --max-shard-size 50MB
 ```

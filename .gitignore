@@ -4,3 +4,4 @@ ingest/raw/
 *.pyc
 *.egg-info
 uv.lock
+*.jsonl

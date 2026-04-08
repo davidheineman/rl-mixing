@@ -340,6 +340,7 @@ def push_to_hub(
     output_dir: Path,
     repo_id: str,
     private: bool = False,
+    max_shard_size: str = "50MB",
 ):
     """Push converted data to HuggingFace Hub as a dataset."""
     from datasets import Dataset, DatasetDict
@@ -357,8 +358,8 @@ def push_to_hub(
         return
 
     dataset_dict = DatasetDict(splits)
-    log.info(f"Pushing to {repo_id}...")
-    dataset_dict.push_to_hub(repo_id, private=private)
+    log.info(f"Pushing to {repo_id} (max_shard_size={max_shard_size})...")
+    dataset_dict.push_to_hub(repo_id, private=private, max_shard_size=max_shard_size)
     log.info(f"Done! https://huggingface.co/datasets/{repo_id}")
 
 
@@ -393,6 +394,11 @@ def main():
         "--private", action="store_true",
         help="Make the HF dataset private",
     )
+    parser.add_argument(
+        "--max-shard-size", type=str, default="50MB",
+        help="Max parquet shard size for HF upload (default: 50MB). "
+             "Smaller shards help the HF dataset viewer load without timeouts.",
+    )
     args = parser.parse_args()
 
     convert_all(
@@ -403,7 +409,11 @@ def main():
     )
 
     if args.push_to_hub:
-        push_to_hub(args.output_dir, args.push_to_hub, private=args.private)
+        push_to_hub(
+            args.output_dir, args.push_to_hub,
+            private=args.private,
+            max_shard_size=args.max_shard_size,
+        )
 
 
 if __name__ == "__main__":
