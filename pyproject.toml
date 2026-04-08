@@ -21,6 +21,7 @@ py-modules = ["experiments", "launch"]
 [tool.uv]
 preview = true
 python-preference = "only-managed"
+environments = ["sys_platform == 'darwin'"]
 
 [tool.uv.sources]
 open-instruct = { path = "open-instruct", editable = true }

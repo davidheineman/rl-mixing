@@ -55,6 +55,7 @@ beaker:
   env:
     VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
+    WANDB_PROJECT: rl-mixing
 
 extra_args:
   # - --active_sampling # prioritize prompts with low, but non-zero, correctness

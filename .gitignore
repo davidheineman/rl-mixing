@@ -2,3 +2,5 @@ open-instruct/
 .venv/
 ingest/raw/
 *.pyc
+*.egg-info
+uv.lock
