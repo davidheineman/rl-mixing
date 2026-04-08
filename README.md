@@ -1,4 +1,6 @@
-data mixing for RL
+data mixing for RL.
+
+🚦 **Current status:** I have a nice default in `configs/examples/gsm_math_qwen_2b.yaml`. Need to (1) setup the Nemotron dataset to get mix domains, (2) set small / large experiment scales, (3) setup eval infra.
 
 ### setup
 
