@@ -1,6 +1,6 @@
 data mixing for RL.
 
-🚦 **Current status:** I have a nice default in `configs/examples/gsm_math_qwen_2b.yaml`. Need to (1) setup the Nemotron dataset to get mix domains, (2) set small / large experiment scales, (3) setup eval infra.
+🚦 **Current status:** I have a nice default in `configs/examples/gsm_math_qwen_2b.yaml`. Need to (1) setup the Nemotron dataset to get mix domains (we need to consume all SOURCES, not just the final mix they provided), (2) set small / large experiment scales (mixing used 1 node for 3 hours. Our math example is [1 node for 6 hours](https://beaker.org/orgs/ai2/workspaces/adaptability/work/01KNQ2MN48CNF3279F2DYAZTE2)), (3) setup eval infra. (in-loop should be fine for now)
 
 ### setup
 
