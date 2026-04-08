@@ -2,7 +2,7 @@
   # https://github.com/allenai/open-instruct/blob/main/scripts/train/qwen/qwen3_4b_dapo_math_32k.sh
   # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
-name: gsm-math-qwen2.5-1.5b-inst-100k
+name: gsm-math-qwen3.5-2b-100k
 model: Qwen/Qwen3.5-2B-Base
 chat_template: qwen_instruct_user_boxed_math
 
