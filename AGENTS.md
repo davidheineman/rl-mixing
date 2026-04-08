@@ -9,8 +9,8 @@ I have a pip library, `cuvette` which has some useful utilities:
 ```sh
 # manage jobs
 uv run -w cuvette bstream <job_or_experiment_id> # stream logs for job
-uv run -w cuvette bstop <job_or_experiment_id> # stop a job
 uv run -w cuvette bpriority <job_or_experiment_id> # change priority for a job
+beaker experiment stop <job_or_experiment_id> # stop a job
 
 # manage workspace
 uv run -w cuvette blist # list secrets in workspace

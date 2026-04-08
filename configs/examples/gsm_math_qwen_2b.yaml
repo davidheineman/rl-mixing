@@ -21,9 +21,9 @@ training:
   beta: 0.0
   total_episodes: 1048576 # total completions (# train steps * # unique prompts * # rollouts per prompt)
   temperature: 1.0
-  response_length: 32768
+  response_length: 32256
   max_prompt_token_length: 512
-  pack_length: 8192
+  pack_length: 65536
   num_samples_per_prompt_rollout: 16
   num_unique_prompts_rollout: 32 # num distinct prompts per train step
   async_steps: 4
@@ -52,6 +52,8 @@ beaker:
   priority: urgent
   preemptible: true
   image: michaeln/open_instruct
+  setup_commands: # michael's image doesn't have updated deps
+    - uv pip install --python /stage/.venv/bin/python -U transformers huggingface_hub
   env:
     VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
@@ -71,6 +73,7 @@ extra_args:
   - "1"
   - --stop_strings
   - "</answer>"
-  - --add_r1_style_format_reward
   - --checkpoint_state_freq
   - "100"
+  - --checkpoint_state_dir
+  - /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh

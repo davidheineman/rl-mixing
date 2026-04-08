@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -28,6 +29,11 @@ def main():
         "--sweep",
         type=str,
         help="Path to a Python file that defines a `get_experiments() -> list[Experiment]` function",
+    )
+    parser.add_argument(
+        "--follow", "-f",
+        action="store_true",
+        help="Stream logs for the last launched job using bstream",
     )
     parser.add_argument(
         "--list",
@@ -78,7 +84,21 @@ def main():
             print()
         return
 
+    if args.dry_run:
+        all_ok = all(exp.validate() for exp in experiments)
+        if not all_ok:
+            sys.exit(1)
+
     launch_sweep(experiments, dry_run=args.dry_run)
+
+    if args.follow and not args.dry_run:
+        last_with_id = next(
+            (exp for exp in reversed(experiments) if getattr(exp, "beaker_experiment_id", None)),
+            None,
+        )
+        if last_with_id:
+            print(f"\nFollowing experiment: {last_with_id.beaker_experiment_id}")
+            os.execvp("bstream", ["bstream", last_with_id.beaker_experiment_id])
 
 
 if __name__ == "__main__":

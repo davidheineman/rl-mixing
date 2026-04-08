@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import copy
 import os
+import re
 import subprocess
 import sys
+import textwrap
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
@@ -172,6 +174,7 @@ class BeakerConfig:
     preemptible: bool = True
     image: str = "nathanl/open_instruct_auto"
     shared_memory: str = "10.24gb"
+    setup_commands: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
 
     def to_mason_args(self) -> list[str]:
@@ -247,14 +250,75 @@ class Experiment:
 
         return cmd
 
+    def validate(self) -> bool:
+        """Validate training args locally against the open-instruct parser.
+
+        Returns True if validation passed (or was skipped due to missing deps).
+        Returns False if args are invalid.
+        """
+        training_cmd = self.build_training_command()
+        training_args = training_cmd[2:]  # skip ['python', 'open_instruct/grpo_fast.py']
+
+        validation_script = textwrap.dedent("""\
+            import sys
+            from open_instruct.utils import ArgumentParserPlus
+            from open_instruct import grpo_utils, data_loader as data_loader_lib
+            from open_instruct.dataset_transformation import TokenizerConfig
+            from open_instruct.model_utils import ModelConfig
+            from open_instruct.environments.tools.utils import EnvsConfig
+            parser = ArgumentParserPlus((
+                grpo_utils.GRPOExperimentConfig,
+                TokenizerConfig,
+                ModelConfig,
+                data_loader_lib.StreamingDataLoaderConfig,
+                data_loader_lib.VLLMConfig,
+                EnvsConfig,
+            ))
+            parser.set_defaults(
+                exp_name="grpo", warmup_ratio=0.0,
+                max_grad_norm=1.0, per_device_train_batch_size=1,
+            )
+            parser.parse_args_into_dataclasses()
+        """)
+
+        try:
+            result = subprocess.run(
+                [sys.executable, "-c", validation_script, *training_args],
+                cwd=str(OPEN_INSTRUCT_DIR),
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+        except subprocess.TimeoutExpired:
+            print(f"  [validate] timed out for {self.name}, skipping")
+            return True
+
+        if result.returncode != 0:
+            stderr = result.stderr.strip()
+            if "ModuleNotFoundError" in stderr or "ImportError" in stderr:
+                print(f"  [validate] skipped (missing local deps)")
+                return True
+            print(f"\n  [validate] FAILED for {self.name}:")
+            for line in stderr.splitlines()[-5:]:
+                print(f"    {line}")
+            print()
+            return False
+
+        print(f"  [validate] OK for {self.name}")
+        return True
+
     def build_full_command(self) -> list[str]:
         """Build the full mason.py command for Beaker launch."""
         training_cmd = self.build_training_command()
 
+        setup_prefix = ""
+        if self.beaker.setup_commands:
+            setup_prefix = " && ".join(self.beaker.setup_commands) + " && "
+
         if self.beaker.num_nodes > 1:
-            inner = f"source {RAY_SETUP_SCRIPT} && " + " ".join(training_cmd)
+            inner = setup_prefix + f"source {RAY_SETUP_SCRIPT} && " + " ".join(training_cmd)
         else:
-            inner = " ".join(training_cmd)
+            inner = setup_prefix + " ".join(training_cmd)
 
         mason_cmd = [
             sys.executable, str(MASON_PY),
@@ -269,6 +333,8 @@ class Experiment:
         """Launch on Beaker. If dry_run, just print the command."""
         cmd = self.build_full_command()
         cmd_str = " \\\n    ".join(cmd)
+
+        self.beaker_experiment_id: str | None = None
 
         if dry_run:
             print(f"\n{'='*60}")
@@ -287,12 +353,23 @@ class Experiment:
         existing = env.get("PYTHONPATH", "")
         env["PYTHONPATH"] = str(OPEN_INSTRUCT_DIR) + (f":{existing}" if existing else "")
 
-        return subprocess.run(
+        result = subprocess.run(
             cmd,
             cwd=str(OPEN_INSTRUCT_DIR),
             env=env,
-            check=True,
+            capture_output=True,
+            text=True,
         )
+        sys.stdout.write(result.stdout)
+        if result.stderr:
+            sys.stderr.write(result.stderr)
+
+        match = re.search(r'https://beaker\.org/ex/([A-Z0-9]+)', result.stdout + result.stderr)
+        if match:
+            self.beaker_experiment_id = match.group(1)
+
+        result.check_returncode()
+        return result
 
     # ----- serialization -----
 
