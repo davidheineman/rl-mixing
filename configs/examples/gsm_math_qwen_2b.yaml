@@ -3,7 +3,8 @@
   # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
 name: gsm-math-qwen3.5-2b-100k
-model: Qwen/Qwen3.5-2B-Base
+# model: Qwen/Qwen3.5-2B-Base
+model: Qwen/Qwen3-4B-Base
 chat_template: qwen_instruct_user_boxed_math
 
 mix:
@@ -23,7 +24,7 @@ training:
   temperature: 1.0
   response_length: 32256
   max_prompt_token_length: 512
-  pack_length: 65536
+  pack_length: 32768
   num_samples_per_prompt_rollout: 16
   num_unique_prompts_rollout: 32 # num distinct prompts per train step
   async_steps: 4
@@ -39,9 +40,9 @@ training:
   apply_verifiable_reward: true
 
 infra:
-  num_learners_per_node: 2
+  num_learners_per_node: 4
+  vllm_num_engines: 4
   vllm_tensor_parallel_size: 1
-  vllm_num_engines: 1
 
 beaker:
   cluster: ai2/jupiter
@@ -52,12 +53,12 @@ beaker:
   priority: urgent
   preemptible: true
   image: michaeln/open_instruct
-  setup_commands: # michael's image doesn't have updated deps
-    - uv pip install --python /stage/.venv/bin/python -U transformers huggingface_hub
+  setup_commands:
+    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read().replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');open(p,'w').write(t)"
+    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_utils.py');t=open(p).read().replace('model = cls(config, *model_args, **model_kwargs)','model_kwargs.pop(\"use_cache\", None); model = cls(config, *model_args, **model_kwargs)');open(p,'w').write(t)"
   env:
     VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
-    WANDB_PROJECT: rl-mixing
 
 extra_args:
   # - --active_sampling # prioritize prompts with low, but non-zero, correctness
@@ -76,4 +77,6 @@ extra_args:
   - --checkpoint_state_freq
   - "100"
   - --checkpoint_state_dir
-  - /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh
+  - /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/gsm-math-qwen3.5-2b-100k
+  - --wandb_project
+  - rl-mixing
