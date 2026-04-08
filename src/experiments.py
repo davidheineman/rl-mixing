@@ -207,6 +207,34 @@ class BeakerConfig:
 
 
 # ---------------------------------------------------------------------------
+# extra_args parsing (supports both list and dict formats)
+# ---------------------------------------------------------------------------
+
+def _parse_extra_args(raw: list | dict) -> list[str]:
+    """Convert extra_args from YAML into a flat argument list.
+
+    Accepts two formats:
+      List (original):  ["--flag", "--key", "value", ...]
+      Dict (preferred):
+        flag: true          →  --flag
+        flag: false         →  (omitted)
+        key: value          →  --key value
+        key: "True"         →  --key True   (quoted strings pass through as values)
+    """
+    if isinstance(raw, list):
+        return [str(x) for x in raw]
+    args: list[str] = []
+    for key, value in raw.items():
+        if value is True:
+            args.append(f"--{key}")
+        elif value is False:
+            continue
+        else:
+            args.extend([f"--{key}", str(value)])
+    return args
+
+
+# ---------------------------------------------------------------------------
 # Full experiment definition
 # ---------------------------------------------------------------------------
 
@@ -424,7 +452,7 @@ class Experiment:
         training = TrainingConfig(**d.pop("training", {}))
         infra = InfraConfig(**d.pop("infra", {}))
         beaker = BeakerConfig(**d.pop("beaker", {}))
-        extra_args = d.pop("extra_args", [])
+        extra_args = _parse_extra_args(d.pop("extra_args", []))
         return cls(
             mix=mix,
             eval_mix=eval_mix,
