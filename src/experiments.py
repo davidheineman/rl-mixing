@@ -11,7 +11,7 @@ from typing import Any
 import yaml
 
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 OPEN_INSTRUCT_DIR = REPO_ROOT / "open-instruct"
 MASON_PY = OPEN_INSTRUCT_DIR / "mason.py"
 MASON_PY = OPEN_INSTRUCT_DIR / "mason.py"
@@ -172,6 +172,7 @@ class BeakerConfig:
     preemptible: bool = True
     image: str = "nathanl/open_instruct_auto"
     shared_memory: str = "10.24gb"
+    env: dict[str, str] = field(default_factory=dict)
 
     def to_mason_args(self) -> list[str]:
         args = [
@@ -189,6 +190,8 @@ class BeakerConfig:
             args.extend(["--workspace", self.workspace])
         if self.preemptible:
             args.append("--preemptible")
+        for k, v in self.env.items():
+            args.extend(["--env", f"{k}={v}"])
         return args
 
 

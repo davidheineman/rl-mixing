@@ -1,48 +1,47 @@
-# RLVR with Qwen2.5-1.5B-Instruct (small/fast for iteration)
-# Based on working config from allenai/open-instruct qwen3_4b_dapo_math_32k.sh
-# Launch: python launch.py configs/examples/gsm_math_qwen_2b.yaml
+# Based on
+  # https://github.com/allenai/open-instruct/blob/main/scripts/train/qwen/qwen3_4b_dapo_math_32k.sh
+  # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
 name: gsm-math-qwen2.5-1.5b-inst-100k
-model: Qwen/Qwen2.5-1.5B-Instruct
-chat_template: null
+model: Qwen/Qwen3.5-2B-Base
+chat_template: qwen_instruct_user_boxed_math
 
 mix:
-  - dataset: allenai/RLVR-GSM-MATH-IF-Mixed-Constraints
+  - dataset: ai2-adapt-dev/rlvr_gsm8k_zs
     proportion: 1.0
     split: train
 
 eval_mix:
-  - dataset: allenai/RLVR-GSM-MATH-IF-Mixed-Constraints
+  - dataset: ai2-adapt-dev/rlvr_gsm8k_zs
     num_samples: 16
     split: train
 
 training:
   learning_rate: 1.0e-6
   beta: 0.0
-  total_episodes: 100000
+  total_episodes: 512 # num prompts total
   temperature: 1.0
-  response_length: 2048
-  max_prompt_token_length: 2048
-  pack_length: 4096
+  response_length: 32768
+  max_prompt_token_length: 512
+  pack_length: 8192
   num_samples_per_prompt_rollout: 16
-  num_unique_prompts_rollout: 8
+  num_unique_prompts_rollout: 32 # num distinct prompts per train step
   async_steps: 4
   per_device_train_batch_size: 1
-  kl_estimator: 3
+  kl_estimator: 2
   lr_scheduler_type: constant
   deepspeed_stage: 3
   gradient_checkpointing: true
   seed: 1
-  local_eval_every: 50
-  save_freq: 50
+  local_eval_every: 100
+  save_freq: 100
   non_stop_penalty: false
   apply_verifiable_reward: true
 
 infra:
-  # 1 node, 8 GPUs: 4 learner + 4 vLLM engines (recommended for small models)
-  num_learners_per_node: 4
+  num_learners_per_node: 2
   vllm_tensor_parallel_size: 1
-  vllm_num_engines: 4
+  vllm_num_engines: 1
 
 beaker:
   cluster: ai2/jupiter
@@ -52,13 +51,25 @@ beaker:
   gpus: 8
   priority: urgent
   preemptible: true
-  image: nathanl/open_instruct_auto
+  image: michaeln/open_instruct
+  env:
+    VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
+    VLLM_ATTENTION_BACKEND: FLASH_ATTN
 
 extra_args:
-  - --system_prompt_override_file
-  - scripts/train/qwen/math_system_prompt.txt
-  - --active_sampling
+  # - --active_sampling # prioritize prompts with low, but non-zero, correctness
   - --inflight_updates
   - --vllm_enable_prefix_caching
+  - --clip_higher
+  - "0.272"
+  - --mask_truncated_completions
+  - "False"
   - --load_ref_policy
   - "True"
+  - --num_mini_batches
+  - "1"
+  - --stop_strings
+  - "</answer>"
+  - --add_r1_style_format_reward
+  - --checkpoint_state_freq
+  - "100"
