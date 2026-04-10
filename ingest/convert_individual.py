@@ -26,12 +26,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
-
-from datasets import load_dataset
+from typing import Any, Iterator
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -49,26 +46,95 @@ class Record:
 
 
 # ---------------------------------------------------------------------------
+# Dataset loading helpers
+# ---------------------------------------------------------------------------
+
+def _load_hf_dataset(hf_name: str, split: str) -> Iterator[dict]:
+    """Load a HuggingFace dataset, falling back to raw JSONL download when
+    the datasets library cannot handle the schema (e.g. heterogeneous JSON
+    types across rows)."""
+    from datasets import load_dataset
+    try:
+        ds = load_dataset(hf_name, split=split)
+        log.info(f"  {len(ds)} rows loaded via datasets library.")
+        yield from ds
+    except Exception as e:
+        log.warning(f"  load_dataset failed ({e}), falling back to raw JSONL download...")
+        yield from _load_raw_jsonl(hf_name, split)
+
+
+def _load_raw_jsonl(hf_name: str, split: str) -> Iterator[dict]:
+    """Download raw JSONL from the HF repo and iterate rows."""
+    from huggingface_hub import hf_hub_download, list_repo_tree
+
+    candidates = [f"{split}.jsonl", f"data/{split}.jsonl"]
+    repo_files = {e.path for e in list_repo_tree(hf_name, repo_type="dataset")}
+    # Also check inside data/ subfolder
+    try:
+        repo_files |= {e.path for e in list_repo_tree(hf_name, repo_type="dataset", path_in_repo="data")}
+    except Exception:
+        pass
+
+    jsonl_path = None
+    for c in candidates:
+        if c in repo_files:
+            jsonl_path = c
+            break
+
+    if jsonl_path is None:
+        raise FileNotFoundError(
+            f"Could not find JSONL file for split '{split}' in {hf_name}. "
+            f"Available files: {sorted(repo_files)}"
+        )
+
+    local_path = hf_hub_download(hf_name, jsonl_path, repo_type="dataset")
+    count = 0
+    with open(local_path) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                yield json.loads(line)
+                count += 1
+    log.info(f"  {count} rows loaded via raw JSONL download ({jsonl_path}).")
+
+
+# ---------------------------------------------------------------------------
 # Per-dataset converters
 #
-# Each returns a list of Record. The HF dataset object is passed in.
+# Each returns a list of Record. An iterator of row dicts is passed in.
 # ---------------------------------------------------------------------------
 
 def _msgs_from_rcp(row: dict) -> list[dict[str, str]] | None:
-    """Extract messages from responses_create_params.input (Nemotron-style)."""
+    """Extract messages from responses_create_params.input (Nemotron-style).
+    Handles content being either a string or a list of content parts."""
     rcp = row.get("responses_create_params")
     if not rcp:
         return None
     msgs = rcp.get("input")
     if not msgs or not isinstance(msgs, list):
         return None
-    return [{"role": m["role"], "content": m["content"]} for m in msgs if "role" in m and "content" in m]
+    result = []
+    for m in msgs:
+        if not isinstance(m, dict) or "role" not in m:
+            continue
+        content = m.get("content", "")
+        if isinstance(content, list):
+            # Multi-part content (e.g. tool use): join text parts
+            parts = []
+            for part in content:
+                if isinstance(part, dict):
+                    parts.append(part.get("text", str(part)))
+                else:
+                    parts.append(str(part))
+            content = "\n".join(parts)
+        result.append({"role": m["role"], "content": str(content)})
+    return result if result else None
 
 
-def convert_dapo_math(ds) -> list[Record]:
+def convert_dapo_math(rows: Iterator[dict]) -> list[Record]:
     """BytedTsinghua-SIA/DAPO-Math-17k — math problems with ground truth answers."""
     records = []
-    for row in ds:
+    for row in rows:
         prompt = row.get("prompt", [])
         if not prompt:
             continue
@@ -80,10 +146,10 @@ def convert_dapo_math(ds) -> list[Record]:
     return records
 
 
-def convert_skywork_math(ds) -> list[Record]:
+def convert_skywork_math(rows: Iterator[dict]) -> list[Record]:
     """Skywork/Skywork-OR1-RL-Data (math split) — same schema as DAPO."""
     records = []
-    for row in ds:
+    for row in rows:
         prompt = row.get("prompt", [])
         if not prompt:
             continue
@@ -95,14 +161,10 @@ def convert_skywork_math(ds) -> list[Record]:
     return records
 
 
-def convert_math_proofs(ds) -> list[Record]:
-    """nvidia/Nemotron-Math-Proofs-v1 — Lean math proofs with formal statements.
-
-    The messages field contains (role, content, reasoning_content). We use
-    the first user message as the prompt and the formal_statement as ground truth.
-    """
+def convert_math_proofs(rows: Iterator[dict]) -> list[Record]:
+    """nvidia/Nemotron-Math-Proofs-v1 — Lean math proofs with formal statements."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = row.get("messages", [])
         if not messages:
             continue
@@ -116,12 +178,11 @@ def convert_math_proofs(ds) -> list[Record]:
     return records
 
 
-def convert_agentic_tool_use(ds) -> list[Record]:
-    """nvidia/Nemotron-RL-Agentic-Conversational-Tool-Use-Pivot-v1 — multi-turn
-    tool-use trajectories. Each row is a behavior cloning step with expected_action.
-    """
+def convert_agentic_tool_use(rows: Iterator[dict]) -> list[Record]:
+    """nvidia/Nemotron-RL-Agentic-Conversational-Tool-Use-v1 — multi-turn
+    tool-use trajectories with expected_action."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -131,10 +192,10 @@ def convert_agentic_tool_use(ds) -> list[Record]:
     return records
 
 
-def convert_swe_pivot(ds) -> list[Record]:
+def convert_swe_pivot(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-Agentic-SWE-Pivot-v1 — SWE agent trajectories."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -144,13 +205,10 @@ def convert_swe_pivot(ds) -> list[Record]:
     return records
 
 
-def convert_identity_following(ds) -> list[Record]:
-    """nvidia/Nemotron-RL-Identity-Following-v1 — identity/principle following.
-
-    Uses a GenRM judge with a principle rubric as ground truth.
-    """
+def convert_identity_following(rows: Iterator[dict]) -> list[Record]:
+    """nvidia/Nemotron-RL-Identity-Following-v1 — identity/principle following."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -159,28 +217,28 @@ def convert_identity_following(ds) -> list[Record]:
     return records
 
 
-def convert_calendar(ds) -> list[Record]:
+def convert_calendar(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-Instruction-Following-Calendar-v2 — calendar-based IF.
 
-    The expected calendar state serves as ground truth.
+    Ground truth is a calendar state, not IFEval constraints, so this
+    routes to the LM judge verifier.
     """
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
         cal_state = row.get("exp_cal_state")
         gt = json.dumps(cal_state) if cal_state else ""
-        records.append(Record(messages=messages, ground_truth=gt, dataset="ifeval"))
+        records.append(Record(messages=messages, ground_truth=gt, dataset="general-quality"))
     return records
 
 
-def convert_multiturn_chat(ds) -> list[Record]:
+def convert_multiturn_chat(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-Instruction-Following-MultiTurnChat-v1 — multi-turn
-    chat with rubric-based evaluation.
-    """
+    chat with rubric-based evaluation."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -190,12 +248,11 @@ def convert_multiturn_chat(ds) -> list[Record]:
     return records
 
 
-def convert_reasoning_gym(ds) -> list[Record]:
+def convert_reasoning_gym(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-ReasoningGym-v1 — puzzle/reasoning tasks with
-    verifiable answers.
-    """
+    verifiable answers."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             messages = [{"role": "user", "content": row.get("question", "")}]
@@ -206,13 +263,10 @@ def convert_reasoning_gym(ds) -> list[Record]:
     return records
 
 
-def convert_safety(ds) -> list[Record]:
-    """nvidia/Nemotron-RL-Safety-v1 — safety preference data.
-
-    Uses the prompt + principle as the task, with empty ground truth (judge-based).
-    """
+def convert_safety(rows: Iterator[dict]) -> list[Record]:
+    """nvidia/Nemotron-RL-Safety-v1 — safety preference data."""
     records = []
-    for row in ds:
+    for row in rows:
         prompt = row.get("prompt", "")
         if not prompt:
             continue
@@ -222,13 +276,10 @@ def convert_safety(ds) -> list[Record]:
     return records
 
 
-def convert_workplace_assistant(ds) -> list[Record]:
-    """nvidia/Nemotron-RL-agent-workplace_assistant — tool-calling workplace tasks.
-
-    Ground truth is a list of expected tool calls.
-    """
+def convert_workplace_assistant(rows: Iterator[dict]) -> list[Record]:
+    """nvidia/Nemotron-RL-agent-workplace_assistant — tool-calling workplace tasks."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -238,12 +289,11 @@ def convert_workplace_assistant(ds) -> list[Record]:
     return records
 
 
-def convert_competitive_coding(ds) -> list[Record]:
+def convert_competitive_coding(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-coding-competitive_coding — competitive programming
-    with unit test verification.
-    """
+    with unit test verification."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -264,28 +314,33 @@ def convert_competitive_coding(ds) -> list[Record]:
     return records
 
 
-def convert_structured_outputs(ds) -> list[Record]:
+def convert_structured_outputs(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-instruction_following-structured_outputs — structured
     output following with schema validation.
+
+    Ground truth is a JSON schema string, not IFEval constraints, so this
+    routes to the LM judge verifier.
     """
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
         schema = row.get("schema_str", "")
         gt = schema if schema else ""
-        records.append(Record(messages=messages, ground_truth=str(gt), dataset="ifeval"))
+        records.append(Record(messages=messages, ground_truth=str(gt), dataset="general-quality"))
     return records
 
 
-def convert_instruction_following(ds) -> list[Record]:
+def convert_instruction_following(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-instruction_following — IFEval-style instruction following.
 
-    Has instruction_id_list and kwargs, matching open-instruct's IFEvalVerifier.
+    open-instruct's IFEvalVerifier uses ast.literal_eval() to parse the
+    ground truth, so we must emit Python-syntax (None/True/False) not
+    JSON-syntax (null/true/false). We use repr() for this.
     """
     records = []
-    for row in ds:
+    for row in rows:
         prompt = row.get("prompt", "")
         if not prompt:
             continue
@@ -293,7 +348,7 @@ def convert_instruction_following(ds) -> list[Record]:
         instruction_ids = row.get("instruction_id_list")
         kwargs_list = row.get("kwargs")
         if instruction_ids and kwargs_list:
-            gt = json.dumps([{
+            gt = repr([{
                 "instruction_id": instruction_ids,
                 "kwargs": kwargs_list,
             }])
@@ -303,10 +358,10 @@ def convert_instruction_following(ds) -> list[Record]:
     return records
 
 
-def convert_mcqa(ds) -> list[Record]:
+def convert_mcqa(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-knowledge-mcqa — multiple choice QA with letter answers."""
     records = []
-    for row in ds:
+    for row in rows:
         messages = _msgs_from_rcp(row)
         if not messages:
             continue
@@ -317,14 +372,14 @@ def convert_mcqa(ds) -> list[Record]:
     return records
 
 
-def convert_genrm(ds) -> list[Record]:
+def convert_genrm(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RLHF-GenRM-v1 — GenRM preference data with paired responses.
 
-    The messages field contains pairs of conversations. We extract the prompt
+    The messages field contains nested conversations. We extract the prompt
     (first user turn) and use the ranking as ground truth metadata.
     """
     records = []
-    for row in ds:
+    for row in rows:
         all_messages = row.get("messages", [])
         if not all_messages or len(all_messages) < 1:
             continue
@@ -351,7 +406,7 @@ class DatasetSpec:
     hf_name: str
     split: str
     converter: Any
-    output_name: str  # name for the output split/file
+    output_name: str
 
 
 DATASETS: list[DatasetSpec] = [
@@ -374,7 +429,7 @@ DATASETS: list[DatasetSpec] = [
         output_name="math_proofs",
     ),
     DatasetSpec(
-        hf_name="nvidia/Nemotron-RL-Agentic-Conversational-Tool-Use-Pivot-v1",
+        hf_name="nvidia/Nemotron-RL-Agentic-Conversational-Tool-Use-v1",
         split="train",
         converter=convert_agentic_tool_use,
         output_name="agentic_tool_use",
@@ -463,18 +518,19 @@ DATASET_BY_HF_NAME = {spec.hf_name: spec for spec in DATASETS}
 def convert_dataset(spec: DatasetSpec, output_dir: Path) -> tuple[int, str]:
     """Download, convert, and write one dataset. Returns (num_records, output_path)."""
     log.info(f"Loading {spec.hf_name} (split={spec.split})...")
-    ds = load_dataset(spec.hf_name, split=spec.split, trust_remote_code=True)
+    rows = _load_hf_dataset(spec.hf_name, spec.split)
 
-    log.info(f"  {len(ds)} rows loaded. Converting...")
-    records = spec.converter(ds)
+    log.info(f"  Converting...")
+    records = spec.converter(rows)
 
+    dataset_tag = f"nemo_{spec.output_name}"
     out_path = output_dir / f"{spec.output_name}.jsonl"
     with out_path.open("w") as f:
         for rec in records:
             f.write(json.dumps({
                 "messages": rec.messages,
                 "ground_truth": rec.ground_truth,
-                "dataset": rec.dataset,
+                "dataset": dataset_tag,
             }) + "\n")
 
     log.info(f"  Wrote {len(records)} records to {out_path}")
@@ -552,13 +608,13 @@ def main():
             n, path = convert_dataset(spec, args.output_dir)
             summary.append((spec.hf_name, spec.output_name, n))
         except Exception as e:
-            log.error(f"Failed to convert {spec.hf_name}: {e}")
+            log.error(f"Failed to convert {spec.hf_name}: {e}", exc_info=True)
             summary.append((spec.hf_name, spec.output_name, -1))
 
     log.info("\n=== Summary ===")
     for hf_name, output_name, n in summary:
         status = f"{n} records" if n >= 0 else "FAILED"
-        log.info(f"  {hf_name:<60s} → {output_name:<25s} {status}")
+        log.info(f"  {hf_name:<60s} -> {output_name:<25s} {status}")
 
     if args.push_to_hub:
         push_to_hub(

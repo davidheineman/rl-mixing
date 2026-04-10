@@ -146,7 +146,7 @@ def convert_ifeval(record: dict, verifier: str) -> ConvertedRecord | None:
     kwargs_list = record.get("kwargs")
 
     if instruction_ids and kwargs_list:
-        constraint = json.dumps([{
+        constraint = repr([{
             "instruction_id": instruction_ids,
             "kwargs": kwargs_list,
         }])
