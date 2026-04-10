@@ -35,13 +35,13 @@ In `open-instruct/` the datasets are called `nemo_{split_name}` for verification
 
 **evals**: Get GPQA, MMLU Pro, HumanEval, MBPP, LCB, IF Bench as in-loop eval. There's AIME one, and some RL Zero val sets folks have used. Should be easy to pipe into HF datasets
 
-gpqa:0shot_cot::hamish_zs_reasoning_deepseek
-ifeval::hamish_zs_reasoning_deepseek
-mmlu:cot::hamish_zs_reasoning_deepseek
-codex_humanevalplus:0-shot-chat::tulu-thinker_deepseek
-mbppplus:0-shot-chat::tulu-thinker_deepseek
-livecodebench_codegeneration::tulu-thinker_deepseek_no_think_tags
-ifeval_ood::tulu-thinker-deepseek
+- [ ] `gpqa:0shot_cot::hamish_zs_reasoning_deepseek`
+- [ ] `ifeval::hamish_zs_reasoning_deepseek`
+- [ ] `mmlu:cot::hamish_zs_reasoning_deepseek`
+- [ ] `codex_humanevalplus:0-shot-chat::tulu-thinker_deepseek`
+- [ ] `mbppplus:0-shot-chat::tulu-thinker_deepseek`
+- [ ] `livecodebench_codegeneration::tulu-thinker_deepseek_no_think_tags`
+- [ ] `ifeval_ood::tulu-thinker-deepseek`
 
 (mmlu pro would be nice, but no Olmo 3 instruct eval config)
 
