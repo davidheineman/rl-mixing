@@ -103,6 +103,27 @@ eval_mix:
   # - dataset: allenai/Dolci-RLZero-Code-7B
   #   num_samples: 16
   #   split: train
+  - dataset: davidheineman/eval-openinstruct
+    split: gpqa
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: ifeval
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: mmlu
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: humanevalplus
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: mbppplus
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: livecodebench
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: ifeval_ood
+    num_samples: 16
 
 training:
   learning_rate: 1.0e-6

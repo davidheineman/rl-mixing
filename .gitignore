@@ -5,3 +5,6 @@ ingest/raw/
 *.egg-info
 uv.lock
 *.jsonl
+RL/
+Gym/
+oe-eval-internal/
