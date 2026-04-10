@@ -42,8 +42,7 @@ In `open-instruct/` the datasets are called `nemo_{split_name}` for verification
 - [ ] `mbppplus:0-shot-chat::tulu-thinker_deepseek`
 - [ ] `livecodebench_codegeneration::tulu-thinker_deepseek_no_think_tags`
 - [ ] `ifeval_ood::tulu-thinker-deepseek`
-
-(mmlu pro would be nice, but no Olmo 3 instruct eval config)
+- [ ] (mmlu pro would be nice, but no Olmo 3 instruct eval config)
 
 **chat template**: Qwen chat template adapted to thinking models (need to implement):
 
