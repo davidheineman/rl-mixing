@@ -44,6 +44,8 @@ In `open-instruct/` the datasets are called `nemo_{split_name}` for verification
 - [ ] `ifeval_ood::tulu-thinker-deepseek`
 - [ ] (mmlu pro would be nice, but no Olmo 3 instruct eval config)
 
+I have a V1 here: https://huggingface.co/datasets/davidheineman/eval-openinstruct. I still need to test this (either parity, or just that the verifiers work).
+
 **chat template**: Qwen chat template adapted to thinking models (need to implement):
 
 ```python
