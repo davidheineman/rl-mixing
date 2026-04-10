@@ -2,7 +2,7 @@
   # https://github.com/allenai/open-instruct/blob/main/scripts/train/qwen/qwen3_4b_dapo_math_32k.sh
   # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
-name: dapo-14k-math-qwen3.5-2b
+name: debug-nvidia-mix-qwen3.5-2b
 # model: Qwen/Qwen3.5-2B-Base
 model: Qwen/Qwen3-4B-Base
 chat_template: qwen_instruct_user_boxed_math
@@ -12,16 +12,66 @@ chat_template: qwen_instruct_user_boxed_math
 #     proportion: 1.0
 #     split: train
 
+# mix:
+#   - dataset: davidheineman/nemotron-rlvr-openinstruct
+#     proportion: 1.0
+#     split: rlvr1
+#   - dataset: davidheineman/nemotron-rlvr-openinstruct
+#     proportion: 1.0
+#     split: rlvr2
+#   - dataset: davidheineman/nemotron-rlvr-openinstruct
+#     proportion: 1.0
+#     split: rlvr3
+
 mix:
-  - dataset: davidheineman/nemotron-rlvr-openinstruct
-    proportion: 1.0
-    split: rlvr1
-  - dataset: davidheineman/nemotron-rlvr-openinstruct
-    proportion: 1.0
-    split: rlvr2
-  - dataset: davidheineman/nemotron-rlvr-openinstruct
-    proportion: 1.0
-    split: rlvr3
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0136
+    split: dapo_math
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0544
+    split: skywork_math
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0068
+    split: math_proofs
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.2721
+    split: agentic_tool_use
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0408
+    split: swe_pivot
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0136
+    split: identity_following
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0272
+    split: calendar
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0136
+    split: multiturn_chat
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0272
+    split: reasoning_gym
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0272
+    split: safety
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0136
+    split: workplace_assistant
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.1224
+    split: competitive_coding
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0272
+    split: structured_outputs
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.1224
+    split: instruction_following
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.0408
+    split: mcqa
+  - dataset: davidheineman/nemotron-individual-openinstruct
+    proportion: 0.1769
+    split: genrm
 
 eval_mix:
   - dataset: mnoukhov/aime_2025_openinstruct
@@ -90,6 +140,6 @@ extra_args:
   num_mini_batches: 1
   stop_strings: "</answer>"
   checkpoint_state_freq: 100
-  checkpoint_state_dir: /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/dapo-14k-math-qwen3.5-2b
+  checkpoint_state_dir: /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/debug-nvidia-mix-qwen3.5-2b
   remap_verifier: math_dapo=math
   wandb_project: rl-mixing
