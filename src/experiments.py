@@ -284,6 +284,16 @@ class Experiment:
 
         cmd.extend(self.extra_args)
 
+        # Append run name. E.g.:
+            # /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/{run_name}
+        try:
+            idx = cmd.index("--checkpoint_state_dir")
+            val = cmd[idx + 1]
+            if val.endswith("/"):
+                cmd[idx + 1] = val + self.name
+        except (ValueError, IndexError):
+            pass
+
         return cmd
 
     def validate(self) -> bool:
