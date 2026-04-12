@@ -1,8 +1,10 @@
-## Beaker and Cuvette
+## Using Compute
 
 You have access to run on a compute cluster!
 
 You can run in `ai2/adaptability` using the `ai2/oe-base` budget. PLEASE RUN ON `urgent` ALWAYS!
+
+## Beaker and Cuvette
 
 I have a pip library, `cuvette` which has some useful utilities:
 
@@ -24,3 +26,17 @@ When launching a job, you might find `bstream` useful to monitor that job before
 Gantry is the Python SDK for running on Gantry. You can see an example of this in-action here: https://github.com/davidheineman/tinking/blob/main/tinking/beaker/launch.py.
 
 You can use that above logic again, if it's helpful.
+
+## Repo-specific details
+
+I've cloned some internal Ai2 repos for your reference:
+
+- `open-instruct/` - The post-training library
+- `oe-eval-internal/` - The eval library
+
+Here are some external codebases
+
+- `RL/` - Nemotron RL (NVIDIA)
+- `Gym/` - Nemotron Gym (NVIDIA)
+
+You can use `open-instruct/` with Gantry! Just enter the folder, implement your method, push to GitHub, and run the command and it will wrok with gantry.

@@ -3,27 +3,8 @@
   # https://beaker.org/orgs/ai2/workspaces/oe-adapt-code/work/01KNJ0CTMABCW4NX3SCH33MMEB
 
 name: debug-nvidia-mix-qwen3-1.7b
-# model: Qwen/Qwen3.5-2B-Base
-# model: Qwen/Qwen3-4B-Base
 model: Qwen/Qwen3-1.7B-Base
-# model: Qwen/Qwen3-14B-Base
 chat_template: qwen_thinker
-
-# mix:
-#   - dataset: mnoukhov/dapo_math_14k_en_openinstruct
-#     proportion: 1.0
-#     split: train
-
-# mix:
-#   - dataset: davidheineman/nemotron-rlvr-openinstruct
-#     proportion: 1.0
-#     split: rlvr1
-#   - dataset: davidheineman/nemotron-rlvr-openinstruct
-#     proportion: 1.0
-#     split: rlvr2
-#   - dataset: davidheineman/nemotron-rlvr-openinstruct
-#     proportion: 1.0
-#     split: rlvr3
 
 mix:
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
@@ -82,27 +63,6 @@ eval_mix:
   - dataset: mnoukhov/brumo_2025_openinstruct
     num_samples: 16
     split: train
-  # - dataset: mnoukhov/aime_2025_openinstruct
-  #   num_samples: 16
-  #   split: train
-  # - dataset: mnoukhov/brumo_2025_openinstruct
-  #   num_samples: 16
-  #   split: train
-  # - dataset: hamishivi/rlvr_general_mix
-  #   num_samples: 16
-  #   split: train
-  # - dataset: allenai/Dolci-RLZero-Code-7B
-  #   num_samples: 16
-  #   split: train
-  # - dataset: allenai/Dolci-RLZero-IF-7B
-  #   num_samples: 16
-  #   split: train
-  # - dataset: allenai/Dolci-RLZero-General-7B
-  #   num_samples: 16
-  #   split: train
-  # - dataset: allenai/Dolci-RLZero-Code-7B
-  #   num_samples: 16
-  #   split: train
   - dataset: davidheineman/eval-openinstruct
     split: gpqa
     num_samples: 16
@@ -185,5 +145,4 @@ extra_args:
   stop_strings: "</answer>"
   checkpoint_state_freq: 100
   checkpoint_state_dir: /weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh
-  remap_verifier: math_dapo=math
   wandb_project: rl-mixing
