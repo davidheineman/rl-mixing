@@ -26,7 +26,8 @@ training:
   local_eval_every: 1
   deepspeed_stage: 3
   response_length: 512
-  max_prompt_token_length: 512
+  max_prompt_token_length: 2048
+  pack_length: 34816
   num_samples_per_prompt_rollout: 1
   num_unique_prompts_rollout: 16
 
@@ -52,5 +53,6 @@ beaker:
 
 extra_args:
   filter_zero_std_samples: "False"
+  eval_response_length: 32768
   stop_strings: "</answer>"
   wandb_project: rl-mixing
