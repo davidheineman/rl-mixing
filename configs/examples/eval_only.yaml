@@ -1,0 +1,75 @@
+name: eval-only-qwen3-4b
+model: Qwen/Qwen3-4B
+chat_template: qwen_thinker
+
+mix:
+  - dataset: mnoukhov/aime_2025_openinstruct
+    proportion: 1.0
+    split: train
+
+eval_mix:
+  - dataset: mnoukhov/aime_2025_openinstruct
+    num_samples: 16
+    split: train
+  - dataset: mnoukhov/brumo_2025_openinstruct
+    num_samples: 16
+    split: train
+  - dataset: davidheineman/eval-openinstruct
+    split: gpqa
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: ifeval
+    num_samples: 16
+  - dataset: davidheineman/eval-openinstruct
+    split: mmlu
+    num_samples: 16
+  # code evals need external code execution API — disabled for now
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: humanevalplus
+  #   num_samples: 16
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: mbppplus
+  #   num_samples: 16
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: livecodebench
+  #   num_samples: 16
+  # ifeval_ood (IFBench) uses instruction IDs not in IFEvalG — disabled for now
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: ifeval_ood
+  #   num_samples: 16
+
+training:
+  total_episodes: 256
+  local_eval_every: 1
+  deepspeed_stage: 3
+  ## 32K rollouts
+  response_length: 32256
+  max_prompt_token_length: 512
+  pack_length: 32768
+  num_samples_per_prompt_rollout: 1
+  num_unique_prompts_rollout: 4
+
+infra:
+  num_learners_per_node: 4
+  vllm_num_engines: 4
+  vllm_tensor_parallel_size: 1
+
+beaker:
+  cluster: ai2/jupiter
+  workspace: ai2/adaptability
+  budget: ai2/oe-base
+  gpus: 8
+  priority: urgent
+  image: michaeln/open_instruct
+  setup_commands:
+    - uv pip install --no-deps datasets==4.8.4
+    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read().replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');open(p,'w').write(t)"
+    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_utils.py');t=open(p).read().replace('model = cls(config, *model_args, **model_kwargs)','model_kwargs.pop(\"use_cache\", None); model = cls(config, *model_args, **model_kwargs)');open(p,'w').write(t)"
+  env:
+    VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
+    VLLM_ATTENTION_BACKEND: FLASH_ATTN
+
+extra_args:
+  filter_zero_std_samples: "False"
+  stop_strings: "</answer>"
+  wandb_project: rl-mixing
