@@ -1,5 +1,7 @@
 data mixing for RL.
 
+Data mixing for pretraining predicts a single "optimal" mix. However, we know the "best" data for RL changes depending on the capability of the model. My idea is to predict the trajectory along the simplex during training, by simply adding a timestep parameter to the fitting procedure.
+
 ### notes
 
 🚦 **Current status:** I have a nice default in `configs/examples/small_scale.yaml`. Need to (1) setup the Nemotron dataset to get mix domains (we need to consume all SOURCES, not just the final mix they provided), (2) set small / large experiment scales (mixing used 1 node for 3 hours. Our math example is [1 node for 6 hours](https://beaker.org/orgs/ai2/workspaces/adaptability/work/01KNQ2MN48CNF3279F2DYAZTE2)), (3) setup eval infra. (in-loop should be fine for now)
