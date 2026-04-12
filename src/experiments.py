@@ -46,12 +46,15 @@ class Mix:
         return result
 
     def splits(self) -> list[str]:
-        # open-instruct auto-expands a single split to all datasets;
-        # passing N splits for N datasets (but 2N mixer_list elements) errors.
+        # The Beaker image expects len(splits) == len(mixer_list) (2N), but
+        # the parser only reads splits[i//2] so duplicates are harmless.
         splits = [c.split for c in self.components]
         if len(set(splits)) == 1:
             return splits[:1]
-        return splits
+        result: list[str] = []
+        for s in splits:
+            result.extend([s, s])
+        return result
 
     def summary(self) -> str:
         parts = [f"{c.dataset.split('/')[-1]}={c.proportion}" for c in self.components]
@@ -73,7 +76,10 @@ class EvalMix:
         splits = [c.split for c in self.components]
         if len(set(splits)) == 1:
             return splits[:1]
-        return splits
+        result: list[str] = []
+        for s in splits:
+            result.extend([s, s])
+        return result
 
 
 @dataclass
