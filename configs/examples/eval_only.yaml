@@ -70,5 +70,6 @@ beaker:
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
 
 extra_args:
+  filter_zero_std_samples: "False"
   stop_strings: "</answer>"
   wandb_project: rl-mixing
