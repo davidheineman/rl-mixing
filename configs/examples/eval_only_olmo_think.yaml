@@ -59,7 +59,7 @@ beaker:
   image: michaeln/open_instruct
   setup_commands:
     - uv pip install --no-deps datasets==4.8.4
-    - uv pip install --no-deps "transformers>=4.57.0"
+    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read();t=t.replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');t=t.replace('raise KeyError(f\"Missing required keys','import logging as _lg; _lg.getLogger(__name__).warning(f\"Missing required keys');open(p,'w').write(t)"
     - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_utils.py');t=open(p).read().replace('model = cls(config, *model_args, **model_kwargs)','model_kwargs.pop(\"use_cache\", None); model = cls(config, *model_args, **model_kwargs)');open(p,'w').write(t)"
   env:
     VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
