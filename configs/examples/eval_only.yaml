@@ -16,35 +16,36 @@ eval_mix:
     split: train
   - dataset: davidheineman/eval-openinstruct
     split: gpqa
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: ifeval
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: mmlu
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: humanevalplus
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: mbppplus
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: livecodebench
-    num_samples: 128
+    num_samples: 16
   - dataset: davidheineman/eval-openinstruct
     split: ifeval_ood
-    num_samples: 128
+    num_samples: 16
 
 training:
-  total_episodes: 16
+  total_episodes: 256
   local_eval_every: 1
   deepspeed_stage: 3
+  ## 32K rollouts
   response_length: 32256
   max_prompt_token_length: 512
   pack_length: 32768
-  num_samples_per_prompt_rollout: 2
-  num_unique_prompts_rollout: 8
+  num_samples_per_prompt_rollout: 1
+  num_unique_prompts_rollout: 4
 
 infra:
   num_learners_per_node: 4
@@ -70,8 +71,9 @@ beaker:
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
 
 extra_args:
+  filter_zero_std_samples: "False"
   eval_on_step_0: true
-  save_traces: true
+  eval_response_length: 32768
   stop_strings: "</answer>"
   code_api_url: "https://p9f1719l7f.execute-api.us-west-2.amazonaws.com/prod/test_program"
   code_max_execution_time: 30.0
