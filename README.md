@@ -46,7 +46,7 @@ python src/launch.py --sweep src/sweeps/single_domain.py --dry-run
 #### python api
 
 ```python
-from experiments import Experiment, Mix, MixComponent, EvalMix, EvalMixComponent
+from rl_mixing.experiments import Experiment, Mix, MixComponent, EvalMix, EvalMixComponent
 
 # example: GSM / IF mixture sweep
 for gsm_frac in [0.25, 0.5, 0.75]:

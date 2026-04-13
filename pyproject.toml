@@ -14,7 +14,10 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["experiments", "launch"]
+packages = ["rl_mixing", "rl_mixing.sweeps"]
+
+[tool.setuptools.package-dir]
+rl_mixing = "src"
 
 # ---- uv configuration (same as open-instruct) ----s
 

@@ -1,4 +1,4 @@
-from experiments import (
+from rl_mixing.experiments import (
     Experiment,
     Mix,
     MixComponent,
@@ -14,26 +14,26 @@ DATASET = "davidheineman/nemotron-super-stage-1-unmixed-openinstruct"
 
 USEFUL_DOMAINS = [
     "dapo_math",
-    "skywork_math",
-    "math_proofs",
-    "multiturn_chat",
-    "reasoning_gym",
-    "competitive_coding",
-    "structured_outputs",
-    "instruction_following",
-    "mcqa",
+    # "skywork_math",
+    # "math_proofs",
+    # "multiturn_chat",
+    # "reasoning_gym",
+    # "competitive_coding",
+    # "structured_outputs",
+    # "instruction_following",
+    # "mcqa",
 ]
 
 EVAL_MIX = EvalMix([
-    EvalMixComponent("mnoukhov/aime_2025_openinstruct", num_samples=32, split="train"),
-    EvalMixComponent("mnoukhov/brumo_2025_openinstruct", num_samples=32, split="train"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="gpqa"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="ifeval"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="mmlu"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="humanevalplus"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="mbppplus"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="livecodebench"),
-    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=32, split="ifeval_ood"),
+    EvalMixComponent("mnoukhov/aime_2025_openinstruct", num_samples=1.0, split="train"),
+    EvalMixComponent("mnoukhov/brumo_2025_openinstruct", num_samples=1.0, split="train"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="gpqa"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="ifeval"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="mmlu"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="humanevalplus"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="mbppplus"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="livecodebench"),
+    EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="ifeval_ood"),
 ])
 
 
@@ -47,7 +47,8 @@ def get_experiments() -> list[Experiment]:
         training=TrainingConfig(
             learning_rate=1e-6,
             beta=0.0,
-            total_episodes=131072,
+            # total_episodes=65536,
+            total_episodes=16, # debug eval
             temperature=1.0,
             response_length=6144,
             max_prompt_token_length=2048,
@@ -61,7 +62,7 @@ def get_experiments() -> list[Experiment]:
             deepspeed_stage=3,
             gradient_checkpointing=True,
             seed=1,
-            local_eval_every=100,
+            eval_at_end=True,
             save_freq=100,
             non_stop_penalty=False,
             apply_verifiable_reward=True,

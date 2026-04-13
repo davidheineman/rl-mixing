@@ -121,8 +121,15 @@ class TrainingConfig:
     non_stop_penalty_value: float = 0.0
     apply_verifiable_reward: bool = True
     verification_reward: float = 10.0
+    eval_at_end: bool = False
+    """Only run local eval on the final training step (disables intermediate evals)."""
+
+    @property
+    def num_training_steps(self) -> int:
+        return self.total_episodes // (self.num_unique_prompts_rollout * self.num_samples_per_prompt_rollout)
 
     def to_args(self) -> list[str]:
+        local_eval_every = self.num_training_steps if self.eval_at_end else self.local_eval_every
         args = [
             # GRPOExperimentConfig
             "--learning_rate", str(self.learning_rate),
@@ -134,7 +141,7 @@ class TrainingConfig:
             "--per_device_train_batch_size", str(self.per_device_train_batch_size),
             "--seed", str(self.seed),
             "--save_freq", str(self.save_freq),
-            "--local_eval_every", str(self.local_eval_every),
+            "--local_eval_every", str(local_eval_every),
             "--warmup_ratio", str(self.warmup_ratio),
             # StreamingDataLoaderConfig
             "--response_length", str(self.response_length),
