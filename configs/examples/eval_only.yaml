@@ -60,7 +60,7 @@ beaker:
   image: michaeln/open_instruct
   setup_commands:
     - uv pip install --no-deps datasets==4.8.4
-    - git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/IFEvalG/instructions.py /tmp/oi/open_instruct/IFEvalG/instructions_registry.py /tmp/oi/open_instruct/IFEvalG/instructions_util.py open_instruct/ open_instruct/IFEvalG/ 2>/dev/null; cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true
+    - git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py open_instruct/ground_truth_utils.py && mkdir -p open_instruct/IFEvalG && cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true
     - uv pip install nltk spacy emoji syllapy langdetect -q 2>/dev/null || true
     - python -c "import nltk; nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('averaged_perceptron_tagger_eng', quiet=True)"
     - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read().replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');open(p,'w').write(t)"
