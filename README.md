@@ -40,7 +40,7 @@ python src/launch.py configs/examples/small_scale.yaml -f
 python src/launch.py configs/examples/eval_only.yaml -f
 
 # --sweep launches a sweep
-python src/launch.py --sweep src/sweeps/example_gsm_if.py --dry-run
+python src/launch.py --sweep src/sweeps/single_domain.py --dry-run
 ```
 
 #### python api
@@ -69,25 +69,13 @@ for gsm_frac in [0.25, 0.5, 0.75]:
 Ingest [nvidia/Nemotron-RL-Super-Training-Blends](https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends) -> [davidheineman/nemotron-super-stage-1-unmixed-openinstruct](https://huggingface.co/datasets/davidheineman/nemotron-super-stage-1-unmixed-openinstruct)
 
 ```sh
-python -c "
-from huggingface_hub import snapshot_download
-snapshot_download(
-    'nvidia/Nemotron-RL-Super-Training-Blends',
-    repo_type='dataset',
-    local_dir='ingest/raw',
-)
-print('Download complete.')
-"
+# convert nemotron datasets
+python ingest/convert_individual.py \
+    --output-dir ingest/converted_nemotron \
+    --push-to-hub davidheineman/nemotron-super-stage-1-unmixed-openinstruct
 
-python ingest/raw/fill_placeholders.py \
-    --input-dir ingest/raw \
-    --output-dir ingest/filled
-
-python ingest/convert_nemotron.py \
-    --input-dir ingest/filled \
-    --output-dir ingest/converted \
-    --splits rlvr1 rlvr2 rlvr3 \
-    --high-fidelity-only \
-    --push-to-hub davidheineman/nemotron-rlvr-openinstruct \
-    --max-shard-size 50MB
+# convert from oe-eval-internal
+python ingest/convert_evals.py \
+    --output-dir ingest/converted_evals \
+    --push-to-hub davidheineman/eval-openinstruct
 ```
