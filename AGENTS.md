@@ -40,3 +40,7 @@ Here are some external codebases
 - `Gym/` - Nemotron Gym (NVIDIA)
 
 You can use `open-instruct/` with Gantry! Just enter the folder, implement your method, push to GitHub, and run the command and it will wrok with gantry.
+
+## Cursor-specific Notes
+
+If you are a Cursor agent, please perform all changes in the current branch. Do NOT create a `cursor/` branch, as there might be multiple agents working on this code simultaneously.
