@@ -9,37 +9,35 @@ mix:
 
 eval_mix:
   - dataset: mnoukhov/aime_2025_openinstruct
-    num_samples: 16
+    num_samples: 128
     split: train
   - dataset: mnoukhov/brumo_2025_openinstruct
-    num_samples: 16
+    num_samples: 128
     split: train
   - dataset: davidheineman/eval-openinstruct
     split: gpqa
-    num_samples: 16
+    num_samples: 128
   - dataset: davidheineman/eval-openinstruct
     split: ifeval
-    num_samples: 16
+    num_samples: 128
   - dataset: davidheineman/eval-openinstruct
     split: mmlu
-    num_samples: 16
-  # code evals need external code execution API — disabled for now
-  # - dataset: davidheineman/eval-openinstruct
-  #   split: humanevalplus
-  #   num_samples: 16
-  # - dataset: davidheineman/eval-openinstruct
-  #   split: mbppplus
-  #   num_samples: 16
-  # - dataset: davidheineman/eval-openinstruct
-  #   split: livecodebench
-  #   num_samples: 16
-  # ifeval_ood (IFBench) uses instruction IDs not in IFEvalG — disabled for now
-  # - dataset: davidheineman/eval-openinstruct
-  #   split: ifeval_ood
-  #   num_samples: 16
+    num_samples: 128
+  - dataset: davidheineman/eval-openinstruct
+    split: humanevalplus
+    num_samples: 128
+  - dataset: davidheineman/eval-openinstruct
+    split: mbppplus
+    num_samples: 128
+  - dataset: davidheineman/eval-openinstruct
+    split: livecodebench
+    num_samples: 128
+  - dataset: davidheineman/eval-openinstruct
+    split: ifeval_ood
+    num_samples: 128
 
 training:
-  total_episodes: 256
+  total_episodes: 16
   local_eval_every: 1
   deepspeed_stage: 3
   ## 32K rollouts
@@ -62,7 +60,11 @@ beaker:
   priority: urgent
   image: michaeln/open_instruct
   setup_commands:
+    # Overrides for eval fixes
     - uv pip install --no-deps datasets==4.8.4
+    - git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/nemo_verifiers.py open_instruct/ && mkdir -p open_instruct/IFEvalG && cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true
+    - uv pip install nltk spacy emoji syllapy langdetect -q 2>/dev/null || true
+    - python -c "import nltk; nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('averaged_perceptron_tagger_eng', quiet=True)"
     # Manual overrides for Qwen 3.5 import
     - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read().replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');open(p,'w').write(t)"
     - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_utils.py');t=open(p).read().replace('model = cls(config, *model_args, **model_kwargs)','model_kwargs.pop(\"use_cache\", None); model = cls(config, *model_args, **model_kwargs)');open(p,'w').write(t)"
@@ -72,6 +74,9 @@ beaker:
 
 extra_args:
   filter_zero_std_samples: "False"
+  eval_on_step_0: true
   eval_response_length: 32768
   stop_strings: "</answer>"
+  code_api_url: "https://p9f1719l7f.execute-api.us-west-2.amazonaws.com/prod/test_program"
+  code_max_execution_time: 30.0
   wandb_project: rl-mixing
