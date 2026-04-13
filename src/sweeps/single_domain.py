@@ -13,12 +13,12 @@ from rl_mixing.experiments import (
 DATASET = "davidheineman/nemotron-super-stage-1-unmixed-openinstruct"
 
 USEFUL_DOMAINS = [
-    "dapo_math",
+    # "dapo_math",
     # "skywork_math",
     # "math_proofs",
     # "multiturn_chat",
     # "reasoning_gym",
-    # "competitive_coding",
+    "competitive_coding",
     # "structured_outputs",
     # "instruction_following",
     # "mcqa",
@@ -48,7 +48,7 @@ def get_experiments() -> list[Experiment]:
             learning_rate=1e-6,
             beta=0.0,
             # total_episodes=65536,
-            total_episodes=16, # debug eval
+            total_episodes=128, # debug eval
             temperature=1.0,
             response_length=6144,
             max_prompt_token_length=2048,
@@ -101,8 +101,9 @@ def get_experiments() -> list[Experiment]:
             "--stop_strings", "</answer>",
             "--code_api_url", "https://p9f1719l7f.execute-api.us-west-2.amazonaws.com/prod/test_program",
             "--code_max_execution_time", "6.0",
+            "--llm_judge_model", "gpt-4o-mini",
             "--checkpoint_state_freq", "100",
-            "--checkpoint_state_dir", "/weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/",
+            "--checkpoint_state_dir", "/weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/v2/",
             "--wandb_project", "rl-mixing",
         ],
     )
