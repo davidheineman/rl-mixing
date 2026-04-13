@@ -1,6 +1,6 @@
 data mixing for RL. 
 
-data mixing for pretraining predicts a single "optimal" mix. However, we know the "best" data for RL changes depending on the capability of the model. My main idea to predict *the trajectory along the simplex during training*, by simply adding a timestep parameter to the fitting procedure.
+Data mixing for pretraining predicts a single "optimal" mix. However, we know the "best" data for RL changes depending on the capability of the model. My idea is to predict *the trajectory along the simplex during training*, by simply adding a timestep parameter to the fitting procedure.
 
 ### notes
 

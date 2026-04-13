@@ -90,8 +90,12 @@ training:
   beta: 0.0
   total_episodes: 131072 # total completions (# train steps * # unique prompts * # rollouts per prompt)
   temperature: 1.0
-  ## 4K rollouts
-  response_length: 3584
+  ## 32K rollouts
+  # response_length: 32256
+  # max_prompt_token_length: 512
+  # pack_length: 32768
+  ## 8K rollouts
+  response_length: 6144
   max_prompt_token_length: 2048
   pack_length: 8192
   num_samples_per_prompt_rollout: 16
@@ -133,6 +137,7 @@ beaker:
     VLLM_ATTENTION_BACKEND: FLASH_ATTN
 
 extra_args:
+  # active_sampling: true  # prioritize prompts with low, but non-zero, correctness
   inflight_updates: true
   vllm_enable_prefix_caching: true
   clip_higher: 0.272
