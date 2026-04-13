@@ -13,15 +13,15 @@ from rl_mixing.experiments import (
 DATASET = "davidheineman/nemotron-super-stage-1-unmixed-openinstruct"
 
 USEFUL_DOMAINS = [
-    # "dapo_math",
-    # "skywork_math",
+    "dapo_math",
+    "skywork_math",
     # "math_proofs",
-    # "multiturn_chat",
-    # "reasoning_gym",
-    "competitive_coding",
-    # "structured_outputs",
-    # "instruction_following",
-    # "mcqa",
+    "multiturn_chat",
+    "reasoning_gym",
+    # "competitive_coding",
+    "structured_outputs",
+    "instruction_following",
+    "mcqa",
 ]
 
 EVAL_MIX = EvalMix([
@@ -82,7 +82,9 @@ def get_experiments() -> list[Experiment]:
             preemptible=True,
             image="michaeln/open_instruct",
             setup_commands=[
-                'git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/nemo_verifiers.py /tmp/oi/open_instruct/ground_truth_utils.py open_instruct/ && uv pip install openapi-schema-validator pyyaml xmltodict -q 2>/dev/null || true',
+                # Overrides for eval fixes
+                'git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/nemo_verifiers.py /tmp/oi/open_instruct/grpo_fast.py /tmp/oi/open_instruct/data_loader.py /tmp/oi/open_instruct/dataset_transformation.py /tmp/oi/open_instruct/model_utils.py open_instruct/ && mkdir -p open_instruct/IFEvalG && cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true && uv pip install openapi-schema-validator pyyaml xmltodict -q 2>/dev/null || true',
+                # Manual overrides for Qwen 3.5 import
                 'python -c "p=__import__(\'transformers\').__file__.replace(\'__init__.py\',\'modeling_rope_utils.py\');t=open(p).read().replace(\'received_keys -= ignore_keys\',\'received_keys -= set(ignore_keys)\');open(p,\'w\').write(t)"',
                 'python -c "p=__import__(\'transformers\').__file__.replace(\'__init__.py\',\'modeling_utils.py\');t=open(p).read().replace(\'model = cls(config, *model_args, **model_kwargs)\',\'model_kwargs.pop(\\"use_cache\\", None); model = cls(config, *model_args, **model_kwargs)\');open(p,\'w\').write(t)"',
             ],
