@@ -7,6 +7,7 @@ model: Qwen/Qwen3-1.7B-Base
 chat_template: qwen_thinker
 
 mix:
+  # more useful domains
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.0136
     split: dapo_math
@@ -16,6 +17,25 @@ mix:
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.0068
     split: math_proofs
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.0136
+    split: multiturn_chat
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.0272
+    split: reasoning_gym
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.1224
+    split: competitive_coding
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.0272
+    split: structured_outputs
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.1224
+    split: instruction_following
+  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
+    proportion: 0.0408
+    split: mcqa
+  # less useful domains
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.2721
     split: agentic_tool_use
@@ -29,61 +49,43 @@ mix:
     proportion: 0.0272
     split: calendar
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.0136
-    split: multiturn_chat
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.0272
-    split: reasoning_gym
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.0272
     split: safety
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.0136
     split: workplace_assistant
   - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.1224
-    split: competitive_coding
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.0272
-    split: structured_outputs
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.1224
-    split: instruction_following
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
-    proportion: 0.0408
-    split: mcqa
-  - dataset: davidheineman/nemotron-super-stage-1-unmixed-openinstruct
     proportion: 0.1769
     split: genrm
 
 eval_mix:
   - dataset: mnoukhov/aime_2025_openinstruct
-    num_samples: 16
+    num_samples: 32
     split: train
   - dataset: mnoukhov/brumo_2025_openinstruct
-    num_samples: 16
+    num_samples: 32
     split: train
   - dataset: davidheineman/eval-openinstruct
     split: gpqa
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: ifeval
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: mmlu
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: humanevalplus
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: mbppplus
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: livecodebench
-    num_samples: 16
+    num_samples: 32
   - dataset: davidheineman/eval-openinstruct
     split: ifeval_ood
-    num_samples: 16
+    num_samples: 32
 
 training:
   learning_rate: 1.0e-6

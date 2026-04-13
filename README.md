@@ -96,8 +96,8 @@ uv sync
 
 ```bash
 # experiments are defined through configs
-python src/launch.py configs/examples/gsm_math_qwen_2b.yaml --dry-run
-python src/launch.py configs/examples/gsm_math_qwen_2b.yaml -f # run + follow
+python src/launch.py configs/examples/small_scale.yaml -f
+python src/launch.py configs/examples/eval_only.yaml -f
 
 # --sweep launches a sweep
 python src/launch.py --sweep src/sweeps/example_gsm_if.py --dry-run
