@@ -72,5 +72,36 @@ if code_patched:
 else:
     print("[patch] CodeVerifier: target not found, skipping")
 
-open(PATH, "w").writelines(final_lines)
+# --- Reward lookup: add prefix-based fallback for dataset name matching ---
+# The dataset field can be "math_aime_2025" but the verifier registers as "math".
+# Add a fallback that tries progressively shorter prefixes.
+reward_patched = False
+result_lines = []
+for i, line in enumerate(final_lines):
+    if (not reward_patched
+        and 'No reward function found for dataset' in line
+        and i >= 1
+        and 'reward_fn_mapping.get' in final_lines[i-2]):
+
+        # Insert prefix fallback before the warning
+        indent = final_lines[i-2][:len(final_lines[i-2]) - len(final_lines[i-2].lstrip())]
+        # Replace the if block: instead of just .get(ds.lower()), try prefix matching
+        # Go back to the .get line and add fallback logic after it
+        result_lines.append(f'{indent}if reward_func is None:\n')
+        result_lines.append(f'{indent}    for key in reward_fn_mapping:\n')
+        result_lines.append(f'{indent}        if ds.lower().startswith(key):\n')
+        result_lines.append(f'{indent}            reward_func = reward_fn_mapping[key]\n')
+        result_lines.append(f'{indent}            break\n')
+        result_lines.append(line)  # keep the original warning line
+        reward_patched = True
+        continue
+
+    result_lines.append(line)
+
+if reward_patched:
+    print("[patch] Reward lookup: added prefix-based dataset name fallback")
+else:
+    print("[patch] Reward lookup: target not found, skipping")
+
+open(PATH, "w").writelines(result_lines)
 print("[patch] Done")
