@@ -62,7 +62,7 @@ beaker:
   setup_commands:
     # Overrides for eval fixes
     - uv pip install --no-deps datasets==4.8.4
-    - git clone --depth 1 -b dhei/per-task-eval-metrics https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/nemo_verifiers.py /tmp/oi/open_instruct/grpo_fast.py /tmp/oi/open_instruct/data_loader.py /tmp/oi/open_instruct/dataset_transformation.py /tmp/oi/open_instruct/model_utils.py open_instruct/ && mkdir -p open_instruct/IFEvalG && cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true
+    - git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/nemo_verifiers.py /tmp/oi/open_instruct/grpo_fast.py /tmp/oi/open_instruct/data_loader.py /tmp/oi/open_instruct/dataset_transformation.py /tmp/oi/open_instruct/model_utils.py open_instruct/ && mkdir -p open_instruct/IFEvalG && cp /tmp/oi/open_instruct/IFEvalG/* open_instruct/IFEvalG/ 2>/dev/null || true
     - uv pip install nltk spacy emoji syllapy langdetect -q 2>/dev/null || true
     - python -c "import nltk; nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('averaged_perceptron_tagger_eng', quiet=True)"
     # Manual overrides for Qwen 3.5 import
