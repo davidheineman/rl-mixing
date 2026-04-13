@@ -1,6 +1,6 @@
-name: eval-only-olmo3-7b-think
-model: allenai/Olmo-3-7B-Think
-chat_template: olmo_thinker
+name: eval-only-qwen3-4b
+model: Qwen/Qwen3-4B
+chat_template: qwen_thinker
 
 mix:
   - dataset: mnoukhov/aime_2025_openinstruct
@@ -23,27 +23,31 @@ eval_mix:
   - dataset: davidheineman/eval-openinstruct
     split: mmlu
     num_samples: 16
-  - dataset: davidheineman/eval-openinstruct
-    split: humanevalplus
-    num_samples: 16
-  - dataset: davidheineman/eval-openinstruct
-    split: mbppplus
-    num_samples: 16
-  - dataset: davidheineman/eval-openinstruct
-    split: livecodebench
-    num_samples: 16
-  - dataset: davidheineman/eval-openinstruct
-    split: ifeval_ood
-    num_samples: 16
+  # code evals need external code execution API — disabled for now
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: humanevalplus
+  #   num_samples: 16
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: mbppplus
+  #   num_samples: 16
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: livecodebench
+  #   num_samples: 16
+  # ifeval_ood (IFBench) uses instruction IDs not in IFEvalG — disabled for now
+  # - dataset: davidheineman/eval-openinstruct
+  #   split: ifeval_ood
+  #   num_samples: 16
 
 training:
   total_episodes: 256
   local_eval_every: 1
   deepspeed_stage: 3
-  response_length: 512
+  ## 32K rollouts
+  response_length: 32256
   max_prompt_token_length: 512
+  pack_length: 32768
   num_samples_per_prompt_rollout: 1
-  num_unique_prompts_rollout: 16
+  num_unique_prompts_rollout: 4
 
 infra:
   num_learners_per_node: 4
@@ -67,5 +71,6 @@ beaker:
 
 extra_args:
   filter_zero_std_samples: "False"
+  eval_response_length: 32768
   stop_strings: "</answer>"
   wandb_project: rl-mixing
