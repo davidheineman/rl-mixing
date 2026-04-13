@@ -16,6 +16,10 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 - Fixes are implemented
     - but it's unclear whether I'm actually running on my `open-instruct` branch... need to figure out the monkey patch that cursor implemented.
 
+<p align="center">
+<img width="600" alt="Screenshot 2026-04-13 at 11 56 49 AM" src="https://github.com/user-attachments/assets/3261f419-b5b4-41dd-a561-0ed524ff2f8d" />
+</p>
+
 ### setup
 
 ```bash
