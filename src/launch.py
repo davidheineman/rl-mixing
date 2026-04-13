@@ -80,7 +80,7 @@ def main():
             print(f"      model: {exp.model}")
             print(f"      mix:   {exp.mix.summary()}")
             print(f"      lr={exp.training.learning_rate}  beta={exp.training.beta}  "
-                  f"nspp={exp.training.number_samples_per_prompt}")
+                  f"nspp={exp.training.num_samples_per_prompt_rollout}")
             print()
         return
 
