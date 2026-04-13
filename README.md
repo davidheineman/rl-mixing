@@ -28,6 +28,8 @@ I'm concerned that I don't understand properties of environments well enough. In
 
 This problem may have been addressed in prior literature ([epiplexity](https://arxiv.org/abs/2601.03220v1)? [coffee automation](https://arxiv.org/abs/1405.6903)? maybe there's some paper on Atari games or something)
 
+It could be the case that mixing is the wrong tool. Instead, you could try to train a sampler (say, $g_i(\tau)$) which predicts the marginal gain from training on source $i$ at capability level $\tau$. That's a form of curriculum learning.
+
 ### setup
 
 ```bash
