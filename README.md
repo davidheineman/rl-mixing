@@ -16,9 +16,15 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 - Fixes are implemented
     - but it's unclear whether I'm actually running on my `open-instruct` branch... need to figure out the monkey patch that cursor implemented.
 
+**Result 1:** These are Qwen 3 1.7B Base models trained on a few stateless Nemotron RL env types. As you can see, the "correct rate" training curves are completely different depending on the environment type:
+
 <p align="center">
 <img width="600" alt="Screenshot 2026-04-13 at 11 56 49 AM" src="https://github.com/user-attachments/assets/3261f419-b5b4-41dd-a561-0ed524ff2f8d" />
 </p>
+
+I'm concerned that I don't understand properties of environments well enough. In text pretraining (for mixing), we assume that the optimal mix at small scales (e.g. 30M param) is the same at larger scales (e.g. 7B param). However, for RL, the optimal environments depends on the capability of the base model, *and that capabilitiy chagnes during training*. It feels like this would create a bound on how far we could extrapolate performance (unlike pretraining, where 10,000x compute extrapolations are suprisingly reasonable).
+
+This problem may have been addressed in prior literature ([epiplexity](https://arxiv.org/abs/2601.03220v1)? [coffee automation](https://arxiv.org/abs/1405.6903)? maybe there's some paper on Atari games or something)
 
 ### setup
 
