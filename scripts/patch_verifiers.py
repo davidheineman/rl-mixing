@@ -74,29 +74,24 @@ else:
 
 # --- Reward lookup: add prefix-based fallback for dataset name matching ---
 # The dataset field can be "math_aime_2025" but the verifier registers as "math".
-# Add a fallback that tries progressively shorter prefixes.
+# Patch the .get() line to also try prefix matching.
 reward_patched = False
 result_lines = []
 for i, line in enumerate(final_lines):
-    if (not reward_patched
-        and 'No reward function found for dataset' in line
-        and i >= 1
-        and 'reward_fn_mapping.get' in final_lines[i-2]):
-
-        # Insert prefix fallback before the warning
-        indent = final_lines[i-2][:len(final_lines[i-2]) - len(final_lines[i-2].lstrip())]
-        # Replace the if block: instead of just .get(ds.lower()), try prefix matching
-        # Go back to the .get line and add fallback logic after it
-        result_lines.append(f'{indent}if reward_func is None:\n')
-        result_lines.append(f'{indent}    for key in reward_fn_mapping:\n')
-        result_lines.append(f'{indent}        if ds.lower().startswith(key):\n')
-        result_lines.append(f'{indent}            reward_func = reward_fn_mapping[key]\n')
-        result_lines.append(f'{indent}            break\n')
-        result_lines.append(line)  # keep the original warning line
-        reward_patched = True
-        continue
-
     result_lines.append(line)
+
+    # After the .get() line, insert prefix-based fallback
+    if (not reward_patched
+        and 'reward_fn_mapping.get(ds.lower())' in line
+        and 'reward_func' in line):
+
+        indent = line[:len(line) - len(line.lstrip())]
+        result_lines.append(f'{indent}if reward_func is None:  # prefix fallback\n')
+        result_lines.append(f'{indent}    for _k in reward_fn_mapping:\n')
+        result_lines.append(f'{indent}        if ds.lower().startswith(_k):\n')
+        result_lines.append(f'{indent}            reward_func = reward_fn_mapping[_k]\n')
+        result_lines.append(f'{indent}            break\n')
+        reward_patched = True
 
 if reward_patched:
     print("[patch] Reward lookup: added prefix-based dataset name fallback")
