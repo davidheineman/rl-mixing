@@ -71,6 +71,7 @@ beaker:
 
 extra_args:
   eval_on_step_0: true
+  save_traces: true
   stop_strings: "</answer>"
   code_api_url: "https://p9f1719l7f.execute-api.us-west-2.amazonaws.com/prod/test_program"
   code_max_execution_time: 6.0
