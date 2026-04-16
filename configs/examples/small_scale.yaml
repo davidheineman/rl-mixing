@@ -131,9 +131,6 @@ beaker:
   setup_commands:
     # Pull nemo verifiers from our branch
     - git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp /tmp/oi/open_instruct/nemo_verifiers.py /tmp/oi/open_instruct/ground_truth_utils.py /tmp/oi/open_instruct/grpo_fast.py /tmp/oi/open_instruct/data_loader.py /tmp/oi/open_instruct/dataset_transformation.py /tmp/oi/open_instruct/model_utils.py open_instruct/ && uv pip install openapi-schema-validator pyyaml xmltodict spacy langdetect emoji syllapy nltk -q 2>/dev/null || true && python -m nltk.downloader stopwords -q 2>/dev/null || true
-    # Manual overrides for Qwen 3.5 import
-    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_rope_utils.py');t=open(p).read().replace('received_keys -= ignore_keys','received_keys -= set(ignore_keys)');open(p,'w').write(t)"
-    - python -c "p=__import__('transformers').__file__.replace('__init__.py','modeling_utils.py');t=open(p).read().replace('model = cls(config, *model_args, **model_kwargs)','model_kwargs.pop(\"use_cache\", None); model = cls(config, *model_args, **model_kwargs)');open(p,'w').write(t)"
   env:
     VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
     VLLM_ATTENTION_BACKEND: FLASH_ATTN

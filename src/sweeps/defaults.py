@@ -71,8 +71,6 @@ def base_experiment(name: str, mix: Mix) -> Experiment:
             setup_commands=[
                 # Install dhei/rl-mixing open_instruct
                 'git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp -r /tmp/oi/open_instruct/* open_instruct/ && mkdir -p oe-eval-internal && uv pip install openapi-schema-validator pyyaml xmltodict spacy langdetect emoji syllapy nltk -q 2>/dev/null || true && python -m nltk.downloader stopwords -q 2>/dev/null || true',
-                # 'python -c "p=__import__(\'transformers\').__file__.replace(\'__init__.py\',\'modeling_rope_utils.py\');t=open(p).read().replace(\'received_keys -= ignore_keys\',\'received_keys -= set(ignore_keys)\');open(p,\'w\').write(t)"',
-                # 'python -c "p=__import__(\'transformers\').__file__.replace(\'__init__.py\',\'modeling_utils.py\');t=open(p).read().replace(\'model = cls(config, *model_args, **model_kwargs)\',\'model_kwargs.pop(\\"use_cache\\", None); model = cls(config, *model_args, **model_kwargs)\');open(p,\'w\').write(t)"',
             ],
             env={
                 "VLLM_ALLOW_LONG_MAX_MODEL_LEN": "1",
