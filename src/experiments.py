@@ -154,13 +154,15 @@ class TrainingConfig:
 
 @dataclass
 class InfraConfig:
-    num_learners_per_node: int = 8
+    num_learners_per_node: list[int] = field(default_factory=lambda: [8])
+    """List of learner GPU counts, one entry per training node.
+    E.g. [4, 4] means 4 learner GPUs on each of 2 nodes (8 total for ZeRO)."""
     vllm_tensor_parallel_size: int = 1
     vllm_num_engines: int = 8
 
     def to_args(self) -> list[str]:
         return [
-            "--num_learners_per_node", str(self.num_learners_per_node),
+            "--num_learners_per_node", *[str(n) for n in self.num_learners_per_node],
             "--vllm_tensor_parallel_size", str(self.vllm_tensor_parallel_size),
             "--vllm_num_engines", str(self.vllm_num_engines),
         ]

@@ -3,7 +3,7 @@ import copy
 from sweeps.defaults import DATASET, base_experiment
 from sweeps.mixes_1b import NVIDIA_WEIGHTS, nvidia_mix, natural_mix
 
-from experiments import Experiment, Mix
+from experiments import Experiment, InfraConfig, Mix
 
 
 def base_experiment_10x(name: str, mix: Mix) -> Experiment:
@@ -12,6 +12,11 @@ def base_experiment_10x(name: str, mix: Mix) -> Experiment:
     exp.training.total_episodes *= 10
     exp.beaker = copy.deepcopy(exp.beaker)
     exp.beaker.num_nodes = 2
+    exp.infra = InfraConfig(
+        num_learners_per_node=[4, 4],
+        vllm_num_engines=8,
+        vllm_tensor_parallel_size=1,
+    )
     return exp
 
 

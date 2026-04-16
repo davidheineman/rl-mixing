@@ -55,7 +55,7 @@ def base_experiment(name: str, mix: Mix) -> Experiment:
             apply_verifiable_reward=True,
         ),
         infra=InfraConfig(
-            num_learners_per_node=4,
+            num_learners_per_node=[4],
             vllm_num_engines=4,
             vllm_tensor_parallel_size=1,
         ),
