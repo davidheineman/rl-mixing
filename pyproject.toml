@@ -20,6 +20,11 @@ packages = ["rl_mixing", "rl_mixing.sweeps"]
 [tool.setuptools.package-dir]
 rl_mixing = "src"
 
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["src"]
+
 # ---- uv configuration (same as open-instruct) ----s
 
 [tool.uv]

@@ -57,8 +57,8 @@ python src/launch.py configs/examples/eval_only.yaml -f
 # --sweep launches a sweep
 python src/launch.py --sweep src/sweeps/single_domain.py --dry-run
 python src/launch.py --sweep src/sweeps/eval_only.py --dry-run
-python src/launch.py --sweep src/sweeps/natural_mix.py --dry-run
-python src/launch.py --sweep src/sweeps/nvidia_mix.py --dry-run
+python src/launch.py --sweep src/sweeps/mixes_1b.py --dry-run
+python src/launch.py --sweep src/sweeps/mixes_14b.py --dry-run
 
 # get eval nums
 python pull_eval.py

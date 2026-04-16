@@ -1,4 +1,4 @@
-from rl_mixing.experiments import (
+from experiments import (
     Experiment,
     Mix,
     EvalMix,

@@ -2,7 +2,7 @@
 
 import copy
 
-from rl_mixing.experiments import Experiment, Mix
+from experiments import Experiment, Mix
 from sweeps.defaults import base_experiment
 
 

@@ -71,7 +71,7 @@ class EvalMix:
 @dataclass
 class EvalMixComponent:
     dataset: str
-    num_samples: int = 16
+    num_samples: int | float = 16
     split: str = "train"
 
 

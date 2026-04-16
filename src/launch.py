@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-from rl_mixing.experiments import Experiment, launch_sweep, load_experiments
+from experiments import Experiment, launch_sweep, load_experiments
 
 
 def main():

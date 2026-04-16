@@ -1,5 +1,3 @@
-"""Fetch all wandb runs matching ^(?:nvidia|natural)-mix- and build an eval table."""
-
 import argparse
 import csv
 import io
