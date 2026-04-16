@@ -7,6 +7,7 @@ dependencies = [
     "open-instruct",
     "pyyaml>=6.0",
     "cuvette", # beaker management
+    "wandb", # pull results
 ]
 
 [build-system]

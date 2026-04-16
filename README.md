@@ -59,6 +59,9 @@ python src/launch.py --sweep src/sweeps/single_domain.py --dry-run
 python src/launch.py --sweep src/sweeps/eval_only.py --dry-run
 python src/launch.py --sweep src/sweeps/natural_mix.py --dry-run
 python src/launch.py --sweep src/sweeps/nvidia_mix.py --dry-run
+
+# get eval nums
+python pull_eval.py
 ```
 
 #### python api
