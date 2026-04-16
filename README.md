@@ -10,8 +10,9 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 
 - In `src/sweeps/single_domain.py`, I have "debug" runs where I train using 100% of the mix domain on Qwen 3 1.7B. Each takes ~6 hours on 1 node. See runs: at [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=4u44z0eam48).
     - https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends
-    - Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
-    - Can we make runtime 50% shorter for small-scale run?
+    [ ] Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
+    [ ] Running natural vs. nvidia mix: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj)
+    [x] Can we make runtime 50% shorter for small-scale run?
 - In-loop eval is implemented 
     - https://huggingface.co/datasets/davidheineman/eval-openinstruct
     - but logging is confusing (needs to show *individual task pass rate*). Also, needs a flag to eval on the full sample at the end of training.
