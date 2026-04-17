@@ -5,18 +5,14 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 ### notes
 
 - `open-instruct/` - https://github.com/allenai/open-instruct/commits/dhei/rl-mixing
+- In-loop eval - https://huggingface.co/datasets/davidheineman/eval-openinstruct
+- Nemotron RL data - https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends
 
-🚦 **Current status:** Data + eval is implemented. Debug runs are training now...
+🚦 **Current status:** Ran two experiments with mixed results. See analysis below.
 
-- In `src/sweeps/single_domain.py`, I have "debug" runs where I train using 100% of the mix domain on Qwen 3 1.7B. Each takes ~6 hours on 1 node. See runs: at [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=4u44z0eam48).
-    - https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends
+- Only 6 domains implemented
     - [ ] Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
-    - [x] Running natural vs. nvidia mix: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj)
-    - [x] Can we make runtime 50% shorter for small-scale run?
-- In-loop eval is implemented 
-    - https://huggingface.co/datasets/davidheineman/eval-openinstruct
-    - but logging is confusing (needs to show *individual task pass rate*). Also, needs a flag to eval on the full sample at the end of training.
-- Fixes are implemented
+- General cleanup
     - but it's unclear whether I'm actually running on my `open-instruct` branch... need to figure out the monkey patch that cursor implemented.
 
 **Result 1:** These are Qwen 3 1.7B Base models trained on a few stateless Nemotron RL env types. As you can see, the "correct rate" training curves are completely different depending on the environment type:
@@ -24,6 +20,8 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 <p align="center">
 <img width="600" alt="Screenshot 2026-04-13 at 11 56 49 AM" src="https://github.com/user-attachments/assets/3261f419-b5b4-41dd-a561-0ed524ff2f8d" />
 </p>
+
+Full wandb: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=4u44z0eam48).
 
 I'm concerned that I don't understand properties of environments well enough. In text pretraining (for mixing), we assume that the optimal mix at small scales (e.g. 30M param) is the same at larger scales (e.g. 7B param). However, for RL, the optimal environments depends on the capability of the base model, *and that capabilitiy chagnes during training*. It feels like this would create a bound on how far we could extrapolate performance (unlike pretraining, where 10,000x compute extrapolations are suprisingly reasonable).
 
@@ -46,6 +44,8 @@ Here is error during training:
 <p align="center">
 <img width="600" alt="Screenshot 2026-04-17 at 10 19 06 AM" src="https://github.com/user-attachments/assets/3cec87cf-7853-470c-b4ed-9afeb4311ae2" />
 </p>
+
+Full wandb: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj).
 
 Here are the results on the downstream tasks at the end of training:
 
