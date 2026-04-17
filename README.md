@@ -14,6 +14,10 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
     - [ ] Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
 - General cleanup
     - [ ] but it's unclear whether I'm actually running on my `open-instruct` branch... need to figure out the monkey patch that cursor implemented.
+- Literature review
+    - [ ] need to read-up on curriculum learning, so I'm not reinventing things...
+
+### results
 
 **Result 1:** These are Qwen 3 1.7B Base models trained on a few stateless Nemotron RL env types. As you can see, the "correct rate" training curves are completely different depending on the environment type:
 
