@@ -5,7 +5,7 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 ### notes
 
 - `open-instruct/` - https://github.com/allenai/open-instruct/commits/dhei/rl-mixing
-- In-loop eval - https://huggingface.co/datasets/davidheineman/eval-openinstruct
+- In-loop eval (ported from `oe-eval-internal/`) - https://huggingface.co/datasets/davidheineman/eval-openinstruct
 - Nemotron RL data - https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends
 
 🚦 **Current status:** Ran two experiments with mixed results. See analysis below.
