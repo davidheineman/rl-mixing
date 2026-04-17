@@ -47,7 +47,7 @@ Here is error during training:
 
 Full wandb: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj).
 
-Here are the results on the downstream tasks at the end of training:
+Here are the results on the downstream tasks at the end of training [full results here](https://docs.google.com/spreadsheets/d/1-VC685ewJHRb-EXLWLR77cf_1oDtaopigViXE3wVRgM/edit?gid=0#gid=0):
 
 | Benchmark   | Natural Mix (1.7B) | NVIDIA Mix (1.7B) | Natural Mix (1.7B 10x) | NVIDIA Mix (1.7B 10x) | Natural Mix (14B) | NVIDIA Mix (14B) |
 |-------------|--------------------|-------------------|-------------------------|----------------------|------------------|------------------|
