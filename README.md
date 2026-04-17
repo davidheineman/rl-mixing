@@ -10,9 +10,9 @@ Data mixing for pretraining predicts a single "optimal" mix. However, we know th
 
 - In `src/sweeps/single_domain.py`, I have "debug" runs where I train using 100% of the mix domain on Qwen 3 1.7B. Each takes ~6 hours on 1 node. See runs: at [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=4u44z0eam48).
     - https://huggingface.co/datasets/nvidia/Nemotron-RL-Super-Training-Blends
-    [ ] Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
-    [ ] Running natural vs. nvidia mix: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj)
-    [x] Can we make runtime 50% shorter for small-scale run?
+    - [ ] Need to check that all domains *actually work* (`competitive_coding`, `math_proofs` might be broken. both require code execution APIs)
+    - [x] Running natural vs. nvidia mix: [wandb.ai/ai2-llm/rl-mixing](https://wandb.ai/ai2-llm/rl-mixing?nw=suwnoemxynj)
+    - [x] Can we make runtime 50% shorter for small-scale run?
 - In-loop eval is implemented 
     - https://huggingface.co/datasets/davidheineman/eval-openinstruct
     - but logging is confusing (needs to show *individual task pass rate*). Also, needs a flag to eval on the full sample at the end of training.
@@ -30,6 +30,38 @@ I'm concerned that I don't understand properties of environments well enough. In
 This problem may have been addressed in prior literature ([epiplexity](https://arxiv.org/abs/2601.03220v1)? [coffee automation](https://arxiv.org/abs/1405.6903)? maybe there's some paper on Atari games or something)
 
 It could be the case that mixing is the wrong tool. Instead, you could try to train a sampler (say, $g_i(\tau)$) which predicts the marginal gain from training on source $i$ at capability level $\tau$. That's a form of curriculum learning.
+
+**Result 2**
+
+I trained models at three comptue scales:
+
+- 1.7B model for 65K episodes
+- 1.7B model for 650K episodes (10x compute)
+- 14B model for 65K episodes (2x compute)
+
+These were trained on 6 domains using the natural distribution vs. the Nemotron distribution. My hypothesis was that the downstream task performance would agree from small -> large compute scales (my null is that model ranking is not the same across scales).
+
+Here is error during training:
+
+<p align="center">
+<img width="600" alt="Screenshot 2026-04-17 at 10 19 06 AM" src="https://github.com/user-attachments/assets/3cec87cf-7853-470c-b4ed-9afeb4311ae2" />
+</p>
+
+Here are the results on the downstream tasks at the end of training:
+
+| Benchmark   | Natural Mix (1.7B) | NVIDIA Mix (1.7B) | Natural Mix (1.7B 10x) | NVIDIA Mix (1.7B 10x) | Natural Mix (14B) | NVIDIA Mix (14B) |
+|-------------|--------------------|-------------------|-------------------------|----------------------|------------------|------------------|
+| GPQA        | 33.0%              | 27.4%             | 26.9%                   | 23.9%                | 49.2%            | 46.2%            |
+| HumanEval   | 33.5%              | 35.4%             | 48.8%                   | 3.7%                 | 67.7%            | 76.2%            |
+| IF Eval     | 27.9%              | 29.4%             | 33.1%                   | 41.4%                | 42.7%            | 65.6%            |
+| IF Bench    | 12.0%              | 10.3%             | 13.0%                   | 13.7%                | 15.7%            | 19.7%            |
+| LCB         | 31.8%              | 30.4%             | 44.0%                   | 35.5%                | 49.9%            | 46.8%            |
+| MBPP        | 1.3%               | 1.1%              | 1.3%                    | 1.3%                 | 2.4%             | 2.4%             |
+| MMLU        | 58.2%              | 60.5%             | 62.2%                   | 62.0%                | 78.9%            | 79.4%            |
+
+<p align="center">
+<img width="500" alt="Screenshot 2026-04-17 at 10 20 01 AM" src="https://github.com/user-attachments/assets/ea5fe312-c14f-4c67-ba1f-b54fb8f628c3" />
+</p>
 
 ### setup
 
