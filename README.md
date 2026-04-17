@@ -63,6 +63,8 @@ Here are the results on the downstream tasks at the end of training [full result
 <img width="500" alt="Screenshot 2026-04-17 at 10 20 01 AM" src="https://github.com/user-attachments/assets/ea5fe312-c14f-4c67-ba1f-b54fb8f628c3" />
 </p>
 
+Breif takeaway is (1) there's not much agreement / transfer on downstream tasks (could be eval noise, coverage, etc.), (2) some benchmarks get *worse* with more compute (1.7B 10x; worse on GPQA). However, the mix *kinda* works. For example, it [upsamples IF data](https://github.com/davidheineman/rl-mixing/blob/5243b96d608e75e3a3b5b0300428cf1b6c9f416c/src/sweeps/mixes_1b.py#L17) and IF Eval / IF Bench performance goes up.
+
 ### setup
 
 ```bash
