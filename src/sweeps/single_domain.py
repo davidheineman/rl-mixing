@@ -5,10 +5,10 @@ from sweeps.defaults import DATASET, base_experiment
 TEST_DOMAINS = [
     "dapo_math",
     "skywork_math",
-    # "math_proofs",
+    "math_proofs",
     "multiturn_chat",
     "reasoning_gym",
-    # "competitive_coding",
+    "competitive_coding",
     "structured_outputs",
     "instruction_following",
     "mcqa",

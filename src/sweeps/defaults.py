@@ -23,6 +23,29 @@ EVAL_MIX = EvalMix([
     EvalMixComponent("davidheineman/eval-openinstruct", num_samples=1.0, split="ifeval_ood"),
 ])
 
+# rl-mixing repo root (for locating scripts/)
+_REPO_URL = "https://github.com/davidheineman/rl-mixing.git"
+
+# Setup: clone open-instruct, install deps, apply patches (multi-remap + lean verifier),
+# start code execution API and Lean sandbox.
+_SETUP_OI = (
+    'git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi'
+    ' && cp -r /tmp/oi/open_instruct/* open_instruct/'
+    ' && cp -r /tmp/oi/configs/beaker_configs/* configs/beaker_configs/ 2>/dev/null || true'
+    ' && mkdir -p oe-eval-internal'
+    ' && uv pip install openapi-schema-validator pyyaml xmltodict spacy langdetect emoji syllapy nltk httpx -q 2>/dev/null || true'
+    ' && python -m nltk.downloader stopwords -q 2>/dev/null || true'
+)
+
+_SETUP_PATCHES = (
+    'git clone --depth 1 ' + _REPO_URL + ' /tmp/rl-mixing'
+    ' && python /tmp/rl-mixing/scripts/patch_open_instruct.py'
+)
+
+_SETUP_CODE_API = 'source configs/beaker_configs/code_api_setup.sh'
+
+_SETUP_LEAN_SANDBOX = 'source /tmp/rl-mixing/scripts/lean_sandbox_setup.sh'
+
 
 def base_experiment(name: str, mix: Mix) -> Experiment:
     """ Default small-scale training config """
@@ -68,13 +91,17 @@ def base_experiment(name: str, mix: Mix) -> Experiment:
             priority="urgent",
             preemptible=True,
             image="michaeln/open_instruct",
+            mount_docker_socket=True,
             setup_commands=[
-                # Install dhei/rl-mixing open_instruct
-                'git clone --depth 1 -b dhei/rl-mixing https://github.com/allenai/open-instruct.git /tmp/oi && cp -r /tmp/oi/open_instruct/* open_instruct/ && mkdir -p oe-eval-internal && uv pip install openapi-schema-validator pyyaml xmltodict spacy langdetect emoji syllapy nltk -q 2>/dev/null || true && python -m nltk.downloader stopwords -q 2>/dev/null || true',
+                _SETUP_OI,
+                _SETUP_PATCHES,
+                _SETUP_CODE_API,
+                _SETUP_LEAN_SANDBOX,
             ],
             env={
                 "VLLM_ALLOW_LONG_MAX_MODEL_LEN": "1",
                 "VLLM_ATTENTION_BACKEND": "FLASH_ATTN",
+                "BEAKER_ALLOW_SUBCONTAINERS": "1",
             },
         ),
         extra_args=[
@@ -85,9 +112,10 @@ def base_experiment(name: str, mix: Mix) -> Experiment:
             "--load_ref_policy", "True",
             "--num_mini_batches", "1",
             "--stop_strings", "</answer>",
-            "--code_api_url", "https://p9f1719l7f.execute-api.us-west-2.amazonaws.com/prod/test_program",
+            "--code_api_url", "$CODE_API_URL/test_program",
             "--code_max_execution_time", "6.0",
             "--llm_judge_model", "gpt-4o-mini",
+            "--remap_verifier", "nemo_competitive_coding=code_stdio,nemo_math_proofs=lean",
             "--checkpoint_state_freq", "100",
             "--checkpoint_state_dir", "/weka/oe-adapt-default/allennlp/deletable_checkpoint/davidh/v2/",
             "--wandb_project", "rl-mixing",

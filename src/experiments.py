@@ -185,6 +185,7 @@ class BeakerConfig:
     shared_memory: str = "10.24gb"
     setup_commands: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
+    mount_docker_socket: bool = False
 
     def to_mason_args(self) -> list[str]:
         args = [
@@ -202,6 +203,8 @@ class BeakerConfig:
             args.extend(["--workspace", self.workspace])
         if self.preemptible:
             args.append("--preemptible")
+        if self.mount_docker_socket:
+            args.append("--mount_docker_socket")
         for k, v in self.env.items():
             args.extend(["--env", f"{k}={v}"])
         return args
