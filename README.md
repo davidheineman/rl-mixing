@@ -2,6 +2,8 @@ data mixing for RL.
 
 Data mixing for pretraining predicts a single "optimal" mix. However, we know the "best" data for RL changes depending on the capability of the model. My idea is to predict *the trajectory along the simplex during training*, by simply adding a timestep parameter to the fitting procedure.
 
+Curriculum learning formulates this as a non-stationary multi armed bandit problem. However, prior literature ([1](https://ronan.collobert.com/pub/2009_curriculum_icml.pdf), [2](https://arxiv.org/abs/1410.4615), [3](https://arxiv.org/abs/1707.00183), [4](https://arxiv.org/abs/1704.03003)) make stricter assumptions than our current problem. For instance, prior work has predefined "levels of difficulty" that (1) have easily-adjusible knobs (e.g. digit arithmetic), and (2) are in the same domain (e.g. train and test are both arithmetic). 
+
 ### notes
 
 - `open-instruct/` - https://github.com/allenai/open-instruct/commits/dhei/rl-mixing
