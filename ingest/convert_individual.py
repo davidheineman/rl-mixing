@@ -162,7 +162,12 @@ def convert_skywork_math(rows: Iterator[dict]) -> list[Record]:
 
 
 def convert_math_proofs(rows: Iterator[dict]) -> list[Record]:
-    """nvidia/Nemotron-Math-Proofs-v1 — Lean math proofs with formal statements."""
+    """nvidia/Nemotron-Math-Proofs-v1 — Lean 4 math proofs with formal statements.
+
+    Ground truth is a JSON dict with ``header`` (Lean imports) and
+    ``formal_statement`` (the theorem to prove).  Routes to the ``lean``
+    verifier which compiles the proof in a Lean 4 sandbox.
+    """
     records = []
     for row in rows:
         messages = row.get("messages", [])
@@ -171,10 +176,14 @@ def convert_math_proofs(rows: Iterator[dict]) -> list[Record]:
         prompt_msgs = [{"role": m["role"], "content": m["content"]} for m in messages if m.get("role") == "user"]
         if not prompt_msgs:
             prompt_msgs = [{"role": "user", "content": row.get("problem", "")}]
-        gt = row.get("formal_statement", "")
-        if not gt:
+        formal_statement = row.get("formal_statement", "")
+        if not formal_statement:
             continue
-        records.append(Record(messages=prompt_msgs, ground_truth=str(gt), dataset="math"))
+        gt = json.dumps({
+            "header": row.get("lean_header", ""),
+            "formal_statement": formal_statement,
+        })
+        records.append(Record(messages=prompt_msgs, ground_truth=gt, dataset="lean"))
     return records
 
 
@@ -291,7 +300,11 @@ def convert_workplace_assistant(rows: Iterator[dict]) -> list[Record]:
 
 def convert_competitive_coding(rows: Iterator[dict]) -> list[Record]:
     """nvidia/Nemotron-RL-coding-competitive_coding — competitive programming
-    with unit test verification."""
+    with unit test verification.
+
+    Tests are stdin/stdout format so this routes to ``code_stdio``
+    (which calls the ``/test_program_stdio`` endpoint).
+    """
     records = []
     for row in rows:
         messages = _msgs_from_rcp(row)
@@ -309,7 +322,7 @@ def convert_competitive_coding(rows: Iterator[dict]) -> list[Record]:
         records.append(Record(
             messages=messages,
             ground_truth=json.dumps(test_cases),
-            dataset="code",
+            dataset="code_stdio",
         ))
     return records
 
@@ -523,14 +536,13 @@ def convert_dataset(spec: DatasetSpec, output_dir: Path) -> tuple[int, str]:
     log.info(f"  Converting...")
     records = spec.converter(rows)
 
-    dataset_tag = f"nemo_{spec.output_name}"
     out_path = output_dir / f"{spec.output_name}.jsonl"
     with out_path.open("w") as f:
         for rec in records:
             f.write(json.dumps({
                 "messages": rec.messages,
                 "ground_truth": rec.ground_truth,
-                "dataset": dataset_tag,
+                "dataset": rec.dataset,
             }) + "\n")
 
     log.info(f"  Wrote {len(records)} records to {out_path}")

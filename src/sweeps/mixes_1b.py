@@ -9,10 +9,10 @@ NVIDIA_WEIGHTS = {
     ### More useful domains
     "dapo_math":              0.0136,
     "skywork_math":           0.0544,
-    # "math_proofs":          0.0068,
+    "math_proofs":            0.0068,
     "multiturn_chat":         0.0136,
     "reasoning_gym":          0.0272,
-    # "competitive_coding":   0.1224,
+    "competitive_coding":     0.1224,
     "structured_outputs":     0.0272,
     "instruction_following":  0.1224,
     "mcqa":                   0.0408,
