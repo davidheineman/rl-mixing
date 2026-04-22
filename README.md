@@ -71,6 +71,18 @@ Here are the results on the downstream tasks at the end of training [full result
 
 Breif takeaway is (1) there's not much agreement / transfer on downstream tasks (could be eval noise, coverage, etc.), (2) some benchmarks get *worse* with more compute (1.7B 10x; worse on GPQA). However, the mix *kinda* works. For example, it [upsamples IF data](https://github.com/davidheineman/rl-mixing/blob/5243b96d608e75e3a3b5b0300428cf1b6c9f416c/src/sweeps/mixes_1b.py#L17) and IF Eval / IF Bench performance goes up.
 
+**meeting with hamish**
+
+- need to solve the eval noise problem for things to work...
+- during olmo 3 development, we didn't do much data-centric work. there was a chat RL thing that Faeze created, not sure if it got used. we mainly consumed existing datasets from others.
+- heuristic-based filtering (excluding instances with too high/low pass rate) works really well. these heuristics will be hard to beat
+- curriculum learning is fine. a *huge* number of samples are usually thrown away (has ongoing project where only 32 of close to 100 rollouts are kept)
+- agrees with "run everything at scale" (e.g. a 14B setup with 100-1000x episodes). things are probably predictable within a model family
+- although data decisions obviously change a lot based on capability of model, modeling decisions change a lot as well!! best modeling decisions for 1.7B are probably different than 14B.
+- format being a big "chunk" of performance is fine. you *probably* want to do some "warm-up" stage. this could be an SFT stage (I thought of doing a short RL run on IF envs, and using *that* as the initial checkpoint)
+
+*I'm also having a hard time separating a difficulty curriculum (always predicting the envs with 30% pass rate) and a healthy mix (e.g. the right ratio of IF envs to math envs, etc.)*. Also, any solution we find will have to add less overhead than re-running environments online. 
+
 ### setup
 
 ```bash
